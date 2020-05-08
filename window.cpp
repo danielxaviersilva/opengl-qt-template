@@ -1,11 +1,12 @@
 #include "window.h"
 #include <iostream>
 #include "shader.h"
-#include <glm/glm.hpp>
 
-using glm::vec3;
+
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+using glm::vec3;
 using glm::mat4;
 
 using namespace std;
@@ -17,6 +18,7 @@ uint vbo[2];
 
 uint vbo_vc;
 uint vao_vc[1];
+
 
 
 // Create a colored triangle

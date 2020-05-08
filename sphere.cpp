@@ -1,24 +1,6 @@
 #include "sphere.h"
+#include "sphere.h"
 
-int sphere::getThetaRes()
-{
-    return thetaRes;
-}
-
-int sphere::getPhiRes()
-{
-    return phiRes;
-}
-
-int sphere::getSphereSize()
-{
-    return sphereSize;
-}
-
-int sphere::getSpherePoints()
-{
-    return spherePoints;
-}
 
 sphere::sphere(int theta, int phi, float R, float xc, float yc, float zc)
 {
@@ -32,16 +14,9 @@ sphere::sphere(int theta, int phi, float R, float xc, float yc, float zc)
 
     setSphereSurface();
 
-    sphereSize = surface.size();
-    spherePoints = sphereSize/4;
+    //setTextureCoords();
 
-    setSphereSurface();
-    setSphereNormal();
-    setTextureCoords();
-
-
-
-
+    bindSphere();
 }
 
 float sphere::getRadius() const
@@ -49,22 +24,20 @@ float sphere::getRadius() const
     return radius;
 }
 
-void sphere::normalize(float *v)
+
+void sphere::bindSphere()
 {
-    float mod;
-    mod = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-    if (mod == 0.0)
-    {
-        v[0] = 0.0;
-        v[1] = 0.0;
-        v[2] = 0.0;
-    }
-    else
-    {
-        v[0] /= mod;
-        v[1] /= mod;
-        v[2] /= mod;
-    }
+    glGenBuffers(1,&surface_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)*surface.size(),surface.data(),GL_STATIC_DRAW);
+
+
+    glGenBuffers(1,&normals_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, normals_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)*normals.size(),normals.data(),GL_STATIC_DRAW);
+
+    //Future: Do that to texture coords
+
 }
 
 void sphere::setSphereSurface()
@@ -111,37 +84,15 @@ void sphere::setSphereSurface()
             {
                 for(int j = 0; j<thetaRes -1; j++)
                 {
-                    surface.push_back(X[i][j] + center[0]);
-                    surface.push_back(Y[i][j] + center[1]);
-                    surface.push_back(Z[i][j] + center[2]);
-                    surface.push_back(1.0f);
+                    surface.push_back(glm::vec4(X[i][j] + center[0], Y[i][j] + center[1], Z[i][j] + center[2], 1.0f));
+                    surface.push_back(glm::vec4(X[i+1][j] + center[0], Y[i+1][j] + center[1], Z[i+1][j] + center[2], 1.0f));
+                    surface.push_back(glm::vec4(X[i+1][j+1] + center[0], Y[i+1][j+1] + center[1], Z[i+1][j+1] + center[2], 1.0f));
 
-                    surface.push_back(X[i+1][j] + center[0]);
-                    surface.push_back(Y[i+1][j] + center[1]);
-                    surface.push_back(Z[i+1][j] + center[2]);
-                    surface.push_back(1.0f);
+                    surface.push_back(glm::vec4(X[i+1][j+1] + center[0], Y[i+1][j+1] + center[1], Z[i+1][j+1] + center[2], 1.0f));
+                    surface.push_back(glm::vec4(X[i][j+1] + center[0], Y[i][j+1] + center[1], Z[i][j+1] + center[2], 1.0f));
+                    surface.push_back(glm::vec4(X[i][j] + center[0], Y[i][j] + center[1], Z[i][j] + center[2], 1.0f));
 
-                    surface.push_back(X[i+1][j+1] + center[0]);
-                    surface.push_back(Y[i+1][j+1] + center[1]);
-                    surface.push_back(Z[i+1][j+1] + center[2]);
-                    surface.push_back(1.0f);
-
-                    surface.push_back(X[i+1][j+1] + center[0]);
-                    surface.push_back(Y[i+1][j+1] + center[1]);
-                    surface.push_back(Z[i+1][j+1] + center[2]);
-                    surface.push_back(1.0f);
-
-                    surface.push_back(X[i][j+1] + center[0]);
-                    surface.push_back(Y[i][j+1] + center[1]);
-                    surface.push_back(Z[i][j+1] + center[2]);
-                    surface.push_back(1.0f);
-
-                    surface.push_back(X[i][j] + center[0]);
-                    surface.push_back(Y[i][j] + center[1]);
-                    surface.push_back(Z[i][j] + center[2]);
-                    surface.push_back(1.0f);
-
-                    idx++;
+                    //idx++;
                 }
             }
 
@@ -149,34 +100,43 @@ void sphere::setSphereSurface()
 
 void sphere::setSphereNormal()
 {
-    float direction[3];
-
-    for (int i = 0; i < spherePoints; i++)
-    {
-        direction[0] = surface[4*i  ] - center[0];
-        direction[1] = surface[4*i+1] - center[1];
-        direction[2] = surface[4*i+2] - center[2];
-
-        normalize(direction);
-
-        normals.push_back(direction[0]);
-        normals.push_back(direction[1]);
-        normals.push_back(direction[2]);
-        normals.push_back(0.0f);
-    }
+    for (int i = 0; i < int(surface.size()); i++)
+        normals.push_back(glm::vec4(glm::normalize(glm::vec3(surface[i]) - glm::make_vec3(center)), 0.0f));
 }
 
-void sphere::setTextureCoords()
+
+
+int sphere::getThetaRes()
 {
-    float direction[3];
-    for (int i = 0; i < spherePoints; i++)
-    {
-        direction[0] = surface[4*i]   - center[0];
-        direction[1] = surface[4*i+1] - center[1];
-        direction[2] = surface[4*i+2] - center[2];
-
-        textureCoords.push_back((atan2(direction[1],direction[0])/(2*M_PI) + 0.5)*(float(spherePoints))/(float(spherePoints) + 1));
-        textureCoords.push_back((0.5-asin(direction[2])/M_PI)  *  (float(spherePoints))/(float(spherePoints) + 1));
-    }
-
+    return thetaRes;
 }
+
+int sphere::getPhiRes()
+{
+    return phiRes;
+}
+
+int sphere::getSphereSize()
+{
+    return sphereSize;
+}
+
+int sphere::getSpherePoints()
+{
+    return spherePoints;
+}
+
+//void sphere::setTextureCoords()
+//{
+//    float direction[3];
+//    for (int i = 0; i < spherePoints; i++)
+//    {
+//        direction[0] = surface[4*i]   - center[0];
+//        direction[1] = surface[4*i+1] - center[1];
+//        direction[2] = surface[4*i+2] - center[2];
+
+//        textureCoords.push_back((atan2(direction[1],direction[0])/(2*M_PI) + 0.5)*(float(spherePoints))/(float(spherePoints) + 1));
+//        textureCoords.push_back((0.5-asin(direction[2])/M_PI)  *  (float(spherePoints))/(float(spherePoints) + 1));
+//    }
+
+//}
