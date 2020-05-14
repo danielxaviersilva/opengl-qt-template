@@ -6,6 +6,7 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QDebug>
+//#include "openGLAdditionals.h"
 
 class QOpenGLShaderProgram;
 
@@ -32,6 +33,10 @@ private:
 
   // Private Helpers
   void printContextInformation();
+protected:
+//  void mousePressEvent(QMouseEvent *ev);
+//  void moveEvent(QMoveEvent *ev);
+//     void voidmouseMoveEvent(QMouseEvent *ev);
 };
 
 #endif // WINDOW_H
