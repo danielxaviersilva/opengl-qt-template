@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include "indexbuffer.h"
+#include "vertexbuffer.h"
 using glm::vec3;
 using glm::mat4;
 
@@ -15,10 +17,12 @@ using namespace std;
 
 shader gpuProgram;
 shader gpuLightSphere;
-uint vbo[2];
+//uint vbo[2];
 
 uint vbo_vc;
 uint vbo_temp3;
+
+VertexBuffer *vbo = new VertexBuffer[3];
 
 
 
@@ -46,7 +50,7 @@ vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.75f, 0.5f, 1.0f), glm::vec4(1.0f,
                          {glm::vec4(-0.75f, -0.75f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
                          {glm::vec4( 0.75f, -0.75f, -0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
                         };
-
+//    temp2.push_back(VertexAttr(glm::vec4(0.75f, 0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
 uint VAO[3];
 
 int loc_attribute_Position;
@@ -66,53 +70,35 @@ Window::~Window()
 void Window::initializeGL()
 {
       initializeOpenGLFunctions();
-//    temp2.push_back(VertexAttr(glm::vec4(0.75f, 0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
 
-    //This call a class that will load a program and attach shaders on it, as well as making possible taking information on its variables
+
     gpuProgram.loadProgram("./hello.vert","./hello.frag");
     //gpuProgram.useProgram();    
     //gpuProgram.programVarInfo();
 
-
-    /*TWO BUFFERS WITH VERTICES AND COLOR ALLOCATION*/
     //generating two indexes for two memory spaces in GPU
-    glGenBuffers(2,vbo);
+    vbo[0].updateBufferData(vertices.data(), sizeof(float)*vertices.size());
+    vbo[1].updateBufferData(color.data(),sizeof(float)*color.size());
+    vbo[2].updateBufferData(temp2.data(),temp2.size()*sizeof(VertexAttr));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*vertices.size(),vertices.data(),GL_STATIC_DRAW);
-
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*color.size(),color.data(),GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);    
     //getting the location of the two variables in the shaders
     loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
     loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
 
     glGenVertexArrays(3, VAO);
     glBindVertexArray(VAO[0]);
-
     glEnableVertexAttribArray(loc_attribute_Position);
     glEnableVertexAttribArray(loc_attribute_Color);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    vbo[0].bind();
     glVertexAttribPointer(loc_attribute_Position, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride? =*/ 0, NULL);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    vbo[1].bind();
     glVertexAttribPointer(loc_attribute_Color, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride?=*/ 0, NULL);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    vbo[1].unbind();
     glBindVertexArray(0);
-
-
-
-    /*////////////RENDERING VERTICES/COLORS THAT ARE ATTRIBUTES OF A STRUCT \\\\\\\\\*/
-    glGenBuffers(1,&vbo_vc);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vc);
-    glBufferData(GL_ARRAY_BUFFER, temp2.size()*sizeof(VertexAttr),temp2.data(),GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    /*EOA*/
 
     glBindVertexArray(VAO[1]);
     loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
@@ -120,16 +106,16 @@ void Window::initializeGL()
     glEnableVertexAttribArray(loc_attribute_Position);
     glEnableVertexAttribArray(loc_attribute_Color);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vc);
+    vbo[2].bind();
     glVertexAttribPointer(loc_attribute_Position, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride? =*/ sizeof(VertexAttr), (void*)offsetof(VertexAttr, vertex));
     glVertexAttribPointer(loc_attribute_Color, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride?=*/ sizeof(VertexAttr), (void*)offsetof(VertexAttr, color));
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    vbo[2].unbind();
     glBindVertexArray(0);
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //    glEnable(GL_CULL_FACE);
     _check_gl_error(__FILE__,__LINE__);
 
@@ -155,9 +141,6 @@ void Window::resizeGL(int width, int height)
 
 void Window::paintGL()
 {
-
-
-
 //    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /*EXAMPLE OF - DRAWING WITH glDrawArrays*/
@@ -168,38 +151,18 @@ void Window::paintGL()
 
 //    //Activating program/VAO
     gpuProgram.useProgram();
-    glBindVertexArray(VAO[1]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
-    gpuProgram.release();
-
-
-    gpuProgram.useProgram();
     glBindVertexArray(VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     gpuProgram.release();
 
-////    GLushort pidx[] = {0,1,2};
-
-////    unsigned int vboID;
-////    glGenBuffers(1, &vboID);
-////    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
-////    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(pidx), pidx, GL_STATIC_DRAW);
-////    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID);
-////    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, NULL);
-////    glDeleteBuffers(1, &vboID);
-
-//    glClearBufferfv(GL_COLOR, 0, bg);
-
-//     gpuProgram.useProgram();
-//     glBindVertexArray(VAO[2]);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-//    glBindVertexArray(0);
-//    gpuProgram.release();
-
-
-
+    gpuProgram.useProgram();
+    glBindVertexArray(VAO[1]);
+    unsigned int pidx[] = {0,1,2};
+    IndexBuffer idx((pidx), 3);
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+    gpuProgram.release();
 
     update();
 
@@ -208,7 +171,9 @@ void Window::paintGL()
 
 void Window::teardownGL()
 {
+    glUseProgram(0);
     gpuProgram.release();
+    delete[] vbo;
     exit(0);
 }
 

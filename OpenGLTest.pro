@@ -15,13 +15,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        indexbuffer.cpp \
         main.cpp \
         shader.cpp \
         sphere.cpp \
+        vertexbuffer.cpp \
         window.cpp
 
 
-INCLUDEPATH += "/usr/local/Cellar/glm/0.9.9.5/include"
+INCLUDEPATH += "/usr/local/Cellar/glm/0.9.9.5/include" \
+                "/usr/local/Cellar/glew/2.1.0_1/include/"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -29,9 +32,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    indexbuffer.h \
     openGLAdditionals.h \
     shader.h \
     sphere.h \
+    vertexbuffer.h \
     window.h
 
 DISTFILES += \

@@ -70,10 +70,10 @@ void shader::loadProgram(const char *vert_path, const char *frag_path)
 
 shader::~shader()
 {
+
     if(program > 0)
-            glDeleteProgram(program);
-    glUseProgram(0);
-    delete this;
+            glDeleteProgram(program);    
+//    delete this;
 
 }
 
