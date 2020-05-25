@@ -9,6 +9,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include "indexbuffer.h"
 #include "vertexbuffer.h"
+#include "vertexarray.h"
 using glm::vec3;
 using glm::mat4;
 
@@ -23,6 +24,7 @@ uint vbo_vc;
 uint vbo_temp3;
 
 VertexBuffer *vbo = new VertexBuffer[3];
+VertexArray *vao = new VertexArray[1];
 
 
 
@@ -49,6 +51,9 @@ typedef struct _vertexAttr{
 vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.75f, 0.5f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
                          {glm::vec4(-0.75f, -0.75f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
                          {glm::vec4( 0.75f, -0.75f, -0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+                         {glm::vec4( .75f,  .75f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}
                         };
 //    temp2.push_back(VertexAttr(glm::vec4(0.75f, 0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
 uint VAO[3];
@@ -73,53 +78,23 @@ void Window::initializeGL()
 
 
     gpuProgram.loadProgram("./hello.vert","./hello.frag");
+    loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
+    loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
     //gpuProgram.useProgram();    
     //gpuProgram.programVarInfo();
-
-    //generating two indexes for two memory spaces in GPU
-    vbo[0].updateBufferData(vertices.data(), sizeof(float)*vertices.size());
-    vbo[1].updateBufferData(color.data(),sizeof(float)*color.size());
     vbo[2].updateBufferData(temp2.data(),temp2.size()*sizeof(VertexAttr));
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    //getting the location of the two variables in the shaders
-    loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
-    loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
+    vao->push<float>(loc_attribute_Position, 4);
+    vao->push<float>(loc_attribute_Color, 4);
+    vao->addBuffer(vbo[2]);
 
-    glGenVertexArrays(3, VAO);
-    glBindVertexArray(VAO[0]);
-    glEnableVertexAttribArray(loc_attribute_Position);
-    glEnableVertexAttribArray(loc_attribute_Color);
-
-    vbo[0].bind();
-    glVertexAttribPointer(loc_attribute_Position, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride? =*/ 0, NULL);
-
-    vbo[1].bind();
-    glVertexAttribPointer(loc_attribute_Color, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride?=*/ 0, NULL);
-
-    vbo[1].unbind();
-    glBindVertexArray(0);
-
-    glBindVertexArray(VAO[1]);
-    loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
-    loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
-    glEnableVertexAttribArray(loc_attribute_Position);
-    glEnableVertexAttribArray(loc_attribute_Color);
-
-    vbo[2].bind();
-    glVertexAttribPointer(loc_attribute_Position, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride? =*/ sizeof(VertexAttr), (void*)offsetof(VertexAttr, vertex));
-    glVertexAttribPointer(loc_attribute_Color, 4, GL_FLOAT, /*normalize? =*/ GL_FALSE, /*stride?=*/ sizeof(VertexAttr), (void*)offsetof(VertexAttr, color));
-
-    vbo[2].unbind();
-    glBindVertexArray(0);
-
-//    glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_BLEND);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glEnable(GL_CULL_FACE);
     _check_gl_error(__FILE__,__LINE__);
 
 //    printContextInformation();
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
 
 
 }
@@ -147,22 +122,30 @@ void Window::paintGL()
     float bg[] = {0.0f,0.0f,0.0f,1.0};
     glClear( GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
+
+    gpuProgram.useProgram();
+    vao->bind();
+    unsigned int pidx[] = {0,1,2,3,4,5};
+    IndexBuffer idx((pidx), 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    vao->unbind();
+    gpuProgram.release();
 //
 
 //    //Activating program/VAO
-    gpuProgram.useProgram();
-    glBindVertexArray(VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
-    gpuProgram.release();
+//    gpuProgram.useProgram();
+//    glBindVertexArray(VAO[0]);
+//    glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glBindVertexArray(0);
+//    gpuProgram.release();
 
-    gpuProgram.useProgram();
-    glBindVertexArray(VAO[1]);
-    unsigned int pidx[] = {0,1,2};
-    IndexBuffer idx((pidx), 3);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
-    gpuProgram.release();
+//    gpuProgram.useProgram();
+//    glBindVertexArray(VAO[1]);
+//    unsigned int pidx[] = {0,1,2};
+//    IndexBuffer idx((pidx), 3);
+//    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+//    glBindVertexArray(0);
+//    gpuProgram.release();
 
     update();
 
