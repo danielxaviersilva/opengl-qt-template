@@ -10,6 +10,7 @@
 #include "indexbuffer.h"
 #include "vertexbuffer.h"
 #include "vertexarray.h"
+#include "camera.h"
 using glm::vec3;
 using glm::mat4;
 
@@ -25,6 +26,7 @@ uint vbo_temp3;
 
 VertexBuffer *vbo = new VertexBuffer[3];
 VertexArray *vao = new VertexArray[1];
+Camera cam;
 
 
 
@@ -48,12 +50,33 @@ typedef struct _vertexAttr{
 //   _vertexAttr(float *inVertex, float *inColor): vertex(inVertex), color(inColor){};
 
 } VertexAttr;
-vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.75f, 0.5f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
-                         {glm::vec4(-0.75f, -0.75f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
-                         {glm::vec4( 0.75f, -0.75f, -0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
-                         {glm::vec4( .75f,  .75f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
-                         {glm::vec4( 0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
-                         {glm::vec4(-0.75f, -0.75f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}
+//vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
+//                         {glm::vec4(0.75f,  0.0f,    0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
+//                         {glm::vec4( 0.0f,  0.75f,   0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+//                         {glm::vec4( 0.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+//                         {glm::vec4( 0.0f,  0.75f,   0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
+//                         {glm::vec4(0.75f,  0.0f,    0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
+//                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+//                         {glm::vec4( 0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+//                         {glm::vec4(-0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}
+//                        };
+
+float a = 0.2;
+std::vector<glm::vec3> eq_aresta{glm::vec3(-0.5, -sqrt(3)/6, 0),
+                                 glm::vec3(0.5,  -sqrt(3)/6, 0),
+                                 glm::vec3(0, sqrt(3)/3, 0)};
+
+
+
+vector<VertexAttr> temp2{{glm::vec4(eq_aresta[0], 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
+                         {glm::vec4(eq_aresta[1], 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+                         {glm::vec4(eq_aresta[2], 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},/*
+                         {glm::vec4(glm::vec2(eq_aresta[0]), -0.0, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+                         {glm::vec4(glm::vec2(eq_aresta[2]), -0.0, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
+                         {glm::vec4(glm::vec2(eq_aresta[1]), -0.0, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
+                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4( 0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4(-0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}*/
                         };
 //    temp2.push_back(VertexAttr(glm::vec4(0.75f, 0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
 uint VAO[3];
@@ -77,24 +100,31 @@ void Window::initializeGL()
       initializeOpenGLFunctions();
 
 
+      std::cout << "Aresta: " << glm::to_string(eq_aresta[0]) << glm::to_string(eq_aresta[1]) << glm::to_string(eq_aresta[2]) <<std::endl;
+
+
     gpuProgram.loadProgram("./hello.vert","./hello.frag");
     loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
     loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
-    //gpuProgram.useProgram();    
-    //gpuProgram.programVarInfo();
+    gpuProgram.useProgram();
+//    gpuProgram.programVarInfo();
     vbo[2].updateBufferData(temp2.data(),temp2.size()*sizeof(VertexAttr));
 
     vao->push<float>(loc_attribute_Position, 4);
     vao->push<float>(loc_attribute_Color, 4);
     vao->addBuffer(vbo[2]);
-
     _check_gl_error(__FILE__,__LINE__);
+
+    cam.setMvpMatrixLoc(gpuProgram.getProgramID(), "mvpMatrix");
+    cam.updateMvpMatrix();
+    _check_gl_error(__FILE__, __LINE__);
+
 
 //    printContextInformation();
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
 
 
 }
@@ -124,28 +154,16 @@ void Window::paintGL()
     glClearBufferfv(GL_COLOR, 0, bg);
 
     gpuProgram.useProgram();
+
+    cam.updateMvpMatrix();
     vao->bind();
-    unsigned int pidx[] = {0,1,2,3,4,5};
-    IndexBuffer idx((pidx), 6);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    _check_gl_error(__FILE__, __LINE__);
+//    unsigned int pidx[] = {0,1,2,3,4,5};
+//    IndexBuffer idx((pidx), 6);
+//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     vao->unbind();
     gpuProgram.release();
-//
-
-//    //Activating program/VAO
-//    gpuProgram.useProgram();
-//    glBindVertexArray(VAO[0]);
-//    glDrawArrays(GL_TRIANGLES, 0, 3);
-//    glBindVertexArray(0);
-//    gpuProgram.release();
-
-//    gpuProgram.useProgram();
-//    glBindVertexArray(VAO[1]);
-//    unsigned int pidx[] = {0,1,2};
-//    IndexBuffer idx((pidx), 3);
-//    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-//    glBindVertexArray(0);
-//    gpuProgram.release();
 
     update();
 
@@ -189,6 +207,67 @@ void Window::printContextInformation()
   qDebug() << qPrintable(glType) << qPrintable(glVersion) << "(" << qPrintable(glProfile) << ")";
 }
 
+void Window::keyPressEvent(QKeyEvent *event)
+{
+    float angle = 1.f;
+    switch(event->key())
+    {
+        case Qt::Key_Left: std::cout << "Tecla esquerda" << std::endl;
+        cam.walkAround(glm::vec3(1.0,0.0,0.0));
+        break;
+
+        case Qt::Key_Right: std::cout << "Tecla Direita" << std::endl;
+        cam.walkAround(glm::vec3(-1.0,0.0,0.0));
+        break;
+
+        case Qt::Key_Up: std::cout << "Tecla Cima" << std::endl;
+        cam.walkAround(glm::vec3(0.0,1.0,0.0));
+        break;
+
+        case Qt::Key_Down: std::cout << "Tecla baixo" << std::endl;
+        cam.walkAround(glm::vec3(0.0,-1.0,0.0));
+        break;
+
+        case Qt::Key_Plus: std::cout << "Tecla +" << std::endl;
+        cam.zoomCommand(1.0);
+        break;
+
+        case Qt::Key_Minus: std::cout << "Tecla -" << std::endl;
+        cam.zoomCommand(-1.0);
+         break;
+
+        case Qt::Key_D: std::cout << "Tecla D" << std::endl;
+        cam.rotateObserver(glm::vec3(0.0f,1.0f,0.0f), angle);
+         break;
+
+        case Qt::Key_A: std::cout << "Tecla A" << std::endl;
+        cam.rotateObserver(glm::vec3(0.0f,-1.0f,0.0f), angle);
+         break;
+
+    case Qt::Key_W: std::cout << "Tecla W" << std::endl;
+    cam.rotateObserver(glm::vec3(-1.0f,0.0f,0.0f), angle);
+     break;
+
+    case Qt::Key_S: std::cout << "Tecla S" << std::endl;
+    cam.rotateObserver(glm::vec3(1.0f,0.0f,0.0f), angle);
+     break;
+
+    case Qt::Key_J: std::cout << "Tecla J" << std::endl;
+    cam.rotateObserver(glm::vec3(0.0f,0.0f,-1.0f), angle);
+     break;
+
+    case Qt::Key_K: std::cout << "Tecla K" << std::endl;
+    cam.rotateObserver(glm::vec3(0.0f,0.0f,1.0f), angle);
+     break;
+
+    case Qt::Key_R: std::cout << "Tecla R" << std::endl;
+    cam.resetCamera();
+     break;
+
+
+
+    }
+}
 //int i = 0;
 //void Window::voidmouseMoveEvent(QMouseEvent *ev)
 //{

@@ -6,6 +6,7 @@
 #include <QOpenGLBuffer>
 //#include <QOpenGLVertexArrayObject>
 #include <QDebug>
+#include <QKeyEvent>
 //#include "openGLAdditionals.h"
 
 class QOpenGLShaderProgram;
@@ -37,6 +38,10 @@ protected:
 //  void mousePressEvent(QMouseEvent *ev);
 //  void moveEvent(QMoveEvent *ev);
 //     void voidmouseMoveEvent(QMouseEvent *ev);
+  void keyPressEvent(QKeyEvent *event);
+//  void keyReleaseEvent(QKeyEvent *event);
+//  void mousePressEvent(QMouseEvent *event);
+//  void mouseReleaseEvent(QMouseEvent *event);
 };
 
 #endif // WINDOW_H

@@ -6,13 +6,19 @@
 #include <string>
 #include <QOpenGLFunctions>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_access.hpp>
 
 
 class Camera
 {
     glm::vec3 m_cameraPos;
-    glm::vec3 m_cameraFront;
+    glm::vec3 m_cameraDir;
     glm::vec3 m_cameraUp;
+
+    glm::vec3 m_cameraPosDefault;
+    glm::vec3 m_cameraDirDefault;
+    glm::vec3 m_cameraUpDefault;
+
 
     glm::mat4 m_view;
     glm::mat4 m_projection;
@@ -21,18 +27,18 @@ class Camera
 
     bool isOrtho;
     float m_cameraSpeed;
-    float m_mvpMatrixLoc;
+    int m_mvpMatrixLoc;
 
 
 public:
     Camera(unsigned int program = 0,
             std::string mvpMatrixName = "",
-           glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f),
-           glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f),
-           glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f));
+           glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  1.0f),
+           glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, -1.0f),
+           glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f));
 
     void setMvpMatrixLoc(unsigned int program, std::string mvpMatrixName);
-    void updateMvpMatrix(unsigned int program);
+    void updateMvpMatrix();
 
 
     void walkAround(glm::vec3 direction);
@@ -40,5 +46,12 @@ public:
     void setCameraSpeed(float cameraSpeed);
 
     void scaleWorld(float scaleFactor);
+    void setMvpMatrixLoc(unsigned int program, const char *mvpMatrixName);
+    glm::mat4 lookAt(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
+    void zoomCommand(float factor);
+
+    void rotateObserver(glm::vec3 axis, float angle);
+    void resetCamera();
+
 };
 #endif // CAMERA_H
