@@ -1,33 +1,16 @@
-#include "sphere.h"
+#include "cilinder.h"
 
-//Sphere::Sphere(int theta, int phi, float R, float xc, float yc, float zc)
-//{
-//    m_thetaRes = theta;
-//    m_phiRes = phi;
-//    m_radius = R;
-
-//    m_center[0] = xc;
-//    m_center[1] = yc;
-//    m_center[2] = zc;
-
-//    m_initialized = false;
-
-////    setSphereSurface();
-
-//    //setTextureCoords();
-
-//    bindSphere();
-//}
-
-Sphere::Sphere(int theta, int phi, float R, glm::vec3 center)
+Cilinder::Cilinder(int thetaRes, int heightRes, float R, float height, glm::vec3 center)
 {
-    m_thetaRes = theta;
-    m_phiRes = phi;
-    m_radius = R;
-    m_center = center;
+    m_thetaRes   = thetaRes;
+    m_heightRes = heightRes;
+    m_height     = height;
+    m_radius       = R;
+    m_center      = center;
+
 }
 
-void Sphere::initialize()
+void Cilinder::initialize()
 {
     if(!m_initialized)
     {
@@ -43,7 +26,7 @@ void Sphere::initialize()
 
         if(locVertex == -1 || locNormal == -1)
         {
-            std::cerr << "Sphere::initialize: At least one of the input names couldn't be found" << std::endl;
+            std::cerr << "Cilinder::initialize: At least one of the input names couldn't be found" << std::endl;
         }
 
         m_vao.bind();
@@ -53,13 +36,13 @@ void Sphere::initialize()
 //        m_vao.push<float>(-1, 2); //Reserved for texture, which is not being used
 
         //Calculate the vertices and assign to buffer m_vbo
-        setSphereSurface();
+        setCilinderSurface();
 
         m_vao.addBuffer(m_vbo);
 
         setLighting();
 
-        //create vertices of a sphere centered at the origin
+        //create vertices of a Cilinder centered at the origin
 //        superquadric_coord = new SuperquadricCoord(position_loc, new GLfloat[4]{1.f, 0, 0, 0}, 5, 5);
 
 
@@ -70,12 +53,118 @@ void Sphere::initialize()
 
 }
 
-float Sphere::getRadius() const
+void Cilinder::setCilinderSurface()
 {
-    return m_radius;
+    float * heightGrid;
+    float * thetaGrid;
+
+    heightGrid = new float[m_heightRes];
+    thetaGrid = new float [m_thetaRes];
+
+    float ** X;
+    float ** Y;
+    float ** Z;
+
+    X = new float* [m_heightRes];
+    Y = new float *[m_heightRes];
+    Z = new float *[m_heightRes];
+
+    for (int count = 0; count < m_heightRes; count++)
+    {
+        X[count] = new float [m_thetaRes];
+        Y[count] = new float [m_thetaRes];
+        Z[count] = new float [m_thetaRes];
+    }
+
+    for (int i = 0; i < m_thetaRes; i++)
+        thetaGrid[i] = 2*(M_PI)*i/(m_thetaRes - 1);
+
+    for (int i = 0; i < m_heightRes; i++)
+        heightGrid[i] = -m_height/2 + m_height*i/(m_heightRes - 1);
+
+    for (int i = 0; i< m_heightRes; i++)
+    {
+        for (int j = 0; j< m_thetaRes; j++)
+        {
+            X[i][j] = m_radius*(cos(thetaGrid[j]));
+            Y[i][j] = heightGrid[i];
+            Z[i][j] = m_radius*(sin(thetaGrid[j]));
+        }
+    }
+
+
+    for (int i = 0; i < m_heightRes-1; i++)
+    {
+        for(int j = 0; j<m_thetaRes -1; j++)
+        {
+            m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i][j], Y[i][j], Z[i][j], 1.0f), //vertex
+                      glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
+
+                      m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i+1][j], Y[i+1][j], Z[i+1][j], 1.0f),
+                      glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
+
+                      m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1], 1.0f), //vertex
+                     glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+
+
+                      m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
+                     glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f)));
+
+                      m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
+                      glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+
+                      m_cilinderAttributes.push_back(cilinderAttributes(
+                      glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
+                      glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f)));
+
+        }
+     }
+
+    for (int i = 0; i < m_thetaRes-1; i++)
+     {
+              m_cilinderAttributes.push_back(cilinderAttributes(
+              glm::vec4(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
+              glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
+
+              m_cilinderAttributes.push_back(cilinderAttributes(
+              glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
+              glm::vec4(0.0f, 1.0f, 0.0f , 0.0f)));
+
+              m_cilinderAttributes.push_back(cilinderAttributes(
+              glm::vec4(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
+              glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
+
+        }
+
+        for (int i = 0; i < m_thetaRes-1; i++)
+        {
+            m_cilinderAttributes.push_back(cilinderAttributes(
+            glm::vec4(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
+            glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
+
+            m_cilinderAttributes.push_back(cilinderAttributes(
+            glm::vec4(0.0f, -m_height/2, 0.0f, 1.0f),
+            glm::vec4(0.0f, -1.0f, 0.0f , 0.0f)));
+
+            m_cilinderAttributes.push_back(cilinderAttributes(
+            glm::vec4(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
+            glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
+
+        }
+
+
+        m_verticesSize = m_cilinderAttributes.size();
+        m_vbo.updateBufferData(m_cilinderAttributes.data(), m_cilinderAttributes.size()*sizeof(cilinderAttributes));
+        _check_gl_error(__FILE__,__LINE__);
+
 }
 
-void Sphere::setProjectionMatrix(glm::mat4 projectionMatrix)
+void Cilinder::setProjectionMatrix(glm::mat4 projectionMatrix)
 {
     if(m_initialized)
     {
@@ -86,7 +175,7 @@ void Sphere::setProjectionMatrix(glm::mat4 projectionMatrix)
     }
 }
 
-void Sphere::setMVMatrix(glm::mat4 mvMatrix)
+void Cilinder::setMVMatrix(glm::mat4 mvMatrix)
 {
     if(m_initialized)
     {
@@ -97,86 +186,11 @@ void Sphere::setMVMatrix(glm::mat4 mvMatrix)
     }
 }
 
-void Sphere::setSphereSurface()
-{
-    float * phi;
-    float * theta;
-
-    phi = new float[m_phiRes];
-    theta = new float [m_thetaRes];
-
-    float ** X;
-    float ** Y;
-    float ** Z;
-
-    X = new float*[m_phiRes];
-    Y = new float *[m_phiRes];
-    Z = new float *[m_phiRes];
-
-    for (int count = 0; count < m_phiRes; count++)
-    {
-        X[count] = new float [m_thetaRes];
-        Y[count] = new float [m_thetaRes];
-        Z[count] = new float [m_thetaRes];
-    }
-
-    for (int i = 0; i < m_thetaRes; i++)
-        theta[i] = 2*(M_PI)*i/(m_thetaRes - 1);
-
-    for (int i = 0; i < m_phiRes; i++)
-        phi[i] = M_PI/2 - M_PI*i/(m_phiRes - 1);
-
-    for (int i = 0; i< m_phiRes; i++)
-    {
-        for (int j = 0; j< m_thetaRes; j++)
-        {
-            X[i][j] = m_radius*(cos(phi[i])*cos(theta[j]));
-            Y[i][j] = m_radius*(cos(phi[i])*sin(theta[j]));
-            Z[i][j] = m_radius*(sin(phi[i]));
-        }
-    }
-    for (int i = 0; i < m_phiRes-1; i++)
-    {
-        for(int j = 0; j<m_thetaRes -1; j++)
-        {
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j] + m_center[0], Y[i+1][j] + m_center[1], Z[i+1][j] + m_center[2], 1.0f),
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f))); //normals
-
-
-        }
-     }
-        m_verticesSize = m_sphereAttributes.size();
-        m_vbo.updateBufferData(m_sphereAttributes.data(), m_sphereAttributes.size()*sizeof(sphereAttributes));
-        _check_gl_error(__FILE__,__LINE__);
-
-}
-
-void Sphere::render()
+void Cilinder::render()
 {
     if (!m_initialized)
     {
-        std::cerr << "Sphere.render(): not rendering because not initialized yet. Use method initialize()" << std::endl;
+        std::cerr << "Cilinder.render(): not rendering because not initialized yet. Use method initialize()" << std::endl;
         return;
     }
     m_program.useProgram();
@@ -184,7 +198,7 @@ void Sphere::render()
 
     glEnable(GL_CULL_FACE);
 
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, m_verticesSize);
 //    glDrawArrays(GL_LINES, 0, m_verticesSize);
 
@@ -195,8 +209,7 @@ void Sphere::render()
 
 }
 
-
-void Sphere::setLighting()
+void Cilinder::setLighting()
 {
 //    //ref to category of how models are computed. 0,1 or 2.
 //    float shading_model       = 1.0f;
@@ -216,9 +229,9 @@ void Sphere::setLighting()
 //    glm::vec4 expectator_position = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
 
     //ref to category of how models are computed. 0,1 or 2.
-    float shading_model       = 0.0f;
+    float shading_model       = 2.0f;
     //Light source Parameters
-    glm::vec4 light_location      = glm::vec4(-1.0f,0.0,.0,1.0);
+    glm::vec4 light_location      = glm::vec4(-1.0f,1.0,.0,1.0);
     glm::vec4 spot_direction      = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);
     float     spot_exponent       = 25.0f;
     float     spot_cutoff         = 180.0f;
@@ -229,7 +242,7 @@ void Sphere::setLighting()
     glm::vec4 Mat_ambientColor    = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 Mat_diffuseColor    = glm::vec4(1.0f, .0f, 0.0f, 1.0f);
     glm::vec4 Mat_specularColor   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    float     shineness           = 25.0f;
+    float     shineness           = 5.0f;
     glm::vec4 expectator_position = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
 
     m_program.useProgram();
@@ -274,29 +287,7 @@ void Sphere::setLighting()
     glUniform4fv(u_expectator_positionLoc,1,glm::value_ptr(expectator_position));
 }
 
-
-
-int Sphere::getThetaRes()
-{
-    return m_thetaRes;
-}
-
-int Sphere::getPhiRes()
-{
-    return m_phiRes;
-}
-
-int Sphere::getSphereSize()
-{
-    return m_sphereSize;
-}
-
-int Sphere::getSpherePoints()
-{
-    return m_spherePoints;
-}
-
-void Sphere::_check_gl_error(const char *file, int line) {
+void Cilinder::_check_gl_error(const char *file, int line) {
     //Ting: sugestao para chamada
     //_check_gl_error(__FILE__,__LINE__)
     GLenum err (glGetError());
@@ -316,18 +307,3 @@ void Sphere::_check_gl_error(const char *file, int line) {
     }
 }
 
-
-//void sphere::setTextureCoords()
-//{
-//    float direction[3];
-//    for (int i = 0; i < spherePoints; i++)
-//    {
-//        direction[0] = surface[4*i]   - center[0];
-//        direction[1] = surface[4*i+1] - center[1];
-//        direction[2] = surface[4*i+2] - center[2];
-
-//        textureCoords.push_back((atan2(direction[1],direction[0])/(2*M_PI) + 0.5)*(float(spherePoints))/(float(spherePoints) + 1));
-//        textureCoords.push_back((0.5-asin(direction[2])/M_PI)  *  (float(spherePoints))/(float(spherePoints) + 1));
-//    }
-
-//}

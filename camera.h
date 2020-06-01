@@ -33,7 +33,7 @@ class Camera
 public:
     Camera(unsigned int program = 0,
             std::string mvpMatrixName = "",
-           glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  1.0f),
+           glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  0.0f),
            glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, -1.0f),
            glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -53,5 +53,7 @@ public:
     void rotateObserver(glm::vec3 axis, float angle);
     void resetCamera();
 
+    glm::mat4 view() const;
+    glm::mat4 projection() const;
 };
 #endif // CAMERA_H

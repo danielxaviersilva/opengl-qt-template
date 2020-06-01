@@ -5,14 +5,15 @@
 
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtx/string_cast.hpp>
 #include "indexbuffer.h"
 #include "vertexbuffer.h"
 #include "vertexarray.h"
 #include "camera.h"
-using glm::vec3;
-using glm::mat4;
+#include "sphere.h"
+#include "cube.h"
+#include "cilinder.h"
 
 using namespace std;
 
@@ -27,10 +28,16 @@ uint vbo_temp3;
 VertexBuffer *vbo = new VertexBuffer[3];
 VertexArray *vao = new VertexArray[1];
 Camera cam;
+Cube c1;
+Cilinder cilinder1(10,5);
 
 
 
 // Create a colored triangle
+Sphere sphere1(100,100,0.5, glm::vec3(0.0f,0.0f, 0.0f));
+Sphere sphere2(100,100,0.125, glm::vec3(-0.75f,0.750f, 0.0f));
+Sphere sphere3(500,500,0.5, glm::vec3(0.0f,0.0f, 0.0f));
+
 
 vector<float> vertices =  { .75f,  .75f,   0.0f, 1.0f,
                             0.75f, -0.75f, 0.0f, 1.0f,
@@ -50,10 +57,25 @@ typedef struct _vertexAttr{
 //   _vertexAttr(float *inVertex, float *inColor): vertex(inVertex), color(inColor){};
 
 } VertexAttr;
-//vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
-//                         {glm::vec4(0.75f,  0.0f,    0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},
-//                         {glm::vec4( 0.0f,  0.75f,   0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
-//                         {glm::vec4( 0.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+vector<VertexAttr> temp2{{glm::vec4( 0.00f,  0.0f,   0.f,  1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.7f)},
+                         {glm::vec4( 0.2f,  0.0f,    0.f,  1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.7f)},
+                         {glm::vec4( 0.0f,  0.2f,    0.f,  1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.7f)},
+                         {glm::vec4( 0.00f,  0.0f,   0.5f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 0.7f)},
+                         {glm::vec4( 0.2f,  0.0f,    0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.7f)},
+                         {glm::vec4( 0.0f,  0.2f,    0.5f, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 0.7f)},
+                         {glm::vec4( 0.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+                         {glm::vec4( 0.0f,  0.75f,   0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
+                         {glm::vec4(0.75f,  0.0f,    0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
+                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4( 0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+                         {glm::vec4(-0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}
+                        };
+
+
+//vector<VertexAttr> temp2{{glm::vec4( 0.00f,  -1.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)},
+//                         {glm::vec4(0.0f,  1.0f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)},
+//                         {glm::vec4(1.0f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)},
+//                         {glm::vec4(-1.00f,  0.0f,   0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)},
 //                         {glm::vec4( 0.0f,  0.75f,   0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
 //                         {glm::vec4(0.75f,  0.0f,    0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
 //                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
@@ -68,16 +90,16 @@ std::vector<glm::vec3> eq_aresta{glm::vec3(-0.5, -sqrt(3)/6, 0),
 
 
 
-vector<VertexAttr> temp2{{glm::vec4(eq_aresta[0], 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
-                         {glm::vec4(eq_aresta[1], 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
-                         {glm::vec4(eq_aresta[2], 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},/*
-                         {glm::vec4(glm::vec2(eq_aresta[0]), -0.0, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
-                         {glm::vec4(glm::vec2(eq_aresta[2]), -0.0, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
-                         {glm::vec4(glm::vec2(eq_aresta[1]), -0.0, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
-                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
-                         {glm::vec4( 0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
-                         {glm::vec4(-0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}*/
-                        };
+//vector<VertexAttr> temp2{{glm::vec4(eq_aresta[0], 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)},
+//                         {glm::vec4(eq_aresta[1], 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)},
+//                         {glm::vec4(eq_aresta[2], 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)},/*
+//                         {glm::vec4(glm::vec2(eq_aresta[0]), -0.0, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)},
+//                         {glm::vec4(glm::vec2(eq_aresta[2]), -0.0, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)},
+//                         {glm::vec4(glm::vec2(eq_aresta[1]), -0.0, 1.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)},
+//                         {glm::vec4( .75f,  .75f,    0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+//                         {glm::vec4( 0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)},
+//                         {glm::vec4(-0.75f, -0.75f,  0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)}*/
+//                        };
 //    temp2.push_back(VertexAttr(glm::vec4(0.75f, 0.75f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
 uint VAO[3];
 
@@ -99,8 +121,14 @@ void Window::initializeGL()
 {
       initializeOpenGLFunctions();
 
+      sphere1.initialize();
+      sphere2.initialize();
+      sphere3.initialize();
+      c1.initialize();
+      cilinder1.initialize();
 
-      std::cout << "Aresta: " << glm::to_string(eq_aresta[0]) << glm::to_string(eq_aresta[1]) << glm::to_string(eq_aresta[2]) <<std::endl;
+
+//      std::cout << "Aresta: " << glm::to_string(eq_aresta[0]) << glm::to_string(eq_aresta[1]) << glm::to_string(eq_aresta[2]) <<std::endl;
 
 
     gpuProgram.loadProgram("./hello.vert","./hello.frag");
@@ -121,27 +149,14 @@ void Window::initializeGL()
 
 
 //    printContextInformation();
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //    glEnable(GL_CULL_FACE);
 
 
 }
 
-void Window::resizeGL(int width, int height)
-{
-
-  // Currently we are not handling width/height changes
-  //(void)width;
-  //(void)height;
-    cout << "(width, height): (" << width << " , " << height << ")" << endl;
-//if(width < height)
-//    glViewport(0, 0, width, width);
-//else
-//    glViewport(0, 0,  height, height);
-
-}
 
 
 void Window::paintGL()
@@ -153,17 +168,47 @@ void Window::paintGL()
     glClear( GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
 
-    gpuProgram.useProgram();
+    cilinder1.setProjectionMatrix(cam.projection());
+    cilinder1.setMVMatrix(cam.view());
+    cilinder1.render();
 
-    cam.updateMvpMatrix();
-    vao->bind();
-    _check_gl_error(__FILE__, __LINE__);
-//    unsigned int pidx[] = {0,1,2,3,4,5};
-//    IndexBuffer idx((pidx), 6);
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    vao->unbind();
-    gpuProgram.release();
+
+
+
+//    c1.setProjectionMatrix(cam.projection());
+//    c1.setMVMatrix(cam.view());
+//    c1.render();
+
+//    glEnable(GL_CULL_FACE);
+
+//    sphere2.setProjectionMatrix(cam.projection());
+//    sphere2.setMVMatrix(cam.view());
+//    sphere2.render();
+
+
+//    sphere1.setProjectionMatrix(cam.projection());
+//    sphere1.setMVMatrix(cam.view());
+//    sphere1.render();
+
+//    sphere3.setProjectionMatrix(cam.projection());
+//    sphere3.setMVMatrix(cam.view());
+//    sphere3.render();
+//    glDisable(GL_CULL_FACE);
+
+
+
+
+//    gpuProgram.useProgram();
+
+//    cam.updateMvpMatrix();
+//    vao->bind();
+//    _check_gl_error(__FILE__, __LINE__);
+////    unsigned int pidx[] = {0,1,2,3,4,5};
+////    IndexBuffer idx((pidx), 6);
+////    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    vao->unbind();
+//    gpuProgram.release();
 
     update();
 
@@ -267,6 +312,21 @@ void Window::keyPressEvent(QKeyEvent *event)
 
 
     }
+}
+
+
+void Window::resizeGL(int width, int height)
+{
+
+  // Currently we are not handling width/height changes
+  //(void)width;
+  //(void)height;
+    cout << "(width, height): (" << width << " , " << height << ")" << endl;
+if(width < height)
+    glViewport(0, 0, width, width);
+else
+    glViewport(0, 0,  height, height);
+
 }
 //int i = 0;
 //void Window::voidmouseMoveEvent(QMouseEvent *ev)

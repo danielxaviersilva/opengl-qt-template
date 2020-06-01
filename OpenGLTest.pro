@@ -16,7 +16,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         camera.cpp \
+        cilinder.cpp \
+        cube.cpp \
         indexbuffer.cpp \
+        lightsource.cpp \
         main.cpp \
         shader.cpp \
         sphere.cpp \
@@ -35,7 +38,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     camera.h \
+    cilinder.h \
+    cube.h \
     indexbuffer.h \
+    lightsource.h \
     openGLAdditionals.h \
     shader.h \
     sphere.h \
@@ -46,6 +52,8 @@ HEADERS += \
 DISTFILES += \
     hello.frag \
     hello.vert \
+    renderLightning.frag \
+    renderLightning.vert \
     shader.frag \
     shader.vert \
     shaderL2Q6.frag \

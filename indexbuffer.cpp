@@ -28,7 +28,7 @@ void IndexBuffer::updateBufferData(const unsigned int *data, unsigned int count)
     if (!m_initialized)
         glGenBuffers(1,&m_vboID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,count,data, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,count*sizeof(unsigned int),data, GL_STATIC_DRAW);
     _check_gl_error(__FILE__, __LINE__);
     m_initialized = true;
 }
