@@ -1,24 +1,5 @@
 #include "sphere.h"
 
-//Sphere::Sphere(int theta, int phi, float R, float xc, float yc, float zc)
-//{
-//    m_thetaRes = theta;
-//    m_phiRes = phi;
-//    m_radius = R;
-
-//    m_center[0] = xc;
-//    m_center[1] = yc;
-//    m_center[2] = zc;
-
-//    m_initialized = false;
-
-////    setSphereSurface();
-
-//    //setTextureCoords();
-
-//    bindSphere();
-//}
-
 Sphere::Sphere(int theta, int phi, float R, glm::vec3 center)
 {
     m_thetaRes = theta;
@@ -33,8 +14,6 @@ void Sphere::initialize()
     {
 
         m_initialized = true;
-
-//        Carregar o shader
         m_program.loadProgram("./renderLightning.vert","./renderLightning.frag");
         m_program.useProgram();
 
@@ -58,10 +37,6 @@ void Sphere::initialize()
         m_vao.addBuffer(m_vbo);
 
         setLighting();
-
-        //create vertices of a sphere centered at the origin
-//        superquadric_coord = new SuperquadricCoord(position_loc, new GLfloat[4]{1.f, 0, 0, 0}, 5, 5);
-
 
         m_vao.unbind();
         m_program.release();
@@ -295,28 +270,6 @@ int Sphere::getSpherePoints()
 {
     return m_spherePoints;
 }
-
-void Sphere::_check_gl_error(const char *file, int line) {
-    //Ting: sugestao para chamada
-    //_check_gl_error(__FILE__,__LINE__)
-    GLenum err (glGetError());
-    while(err!=GL_NO_ERROR) {
-        std::string error;
-        switch(err) {
-            case GL_INVALID_OPERATION: error="INVALID_OPERATION"; break;
-            case GL_INVALID_ENUM: error="INVALID_ENUM"; break;
-            case GL_INVALID_VALUE: error="INVALID_VALUE"; break;
-            case GL_OUT_OF_MEMORY: error="OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION: error="INVALID_FRAMEBUFFER_OPERATION"; break;
-            case GL_STACK_UNDERFLOW: error="GL_STACK_UNDERFLOW"; break;
-            case GL_STACK_OVERFLOW: error="GL_STACK_OVERFLOW"; break;
-        }
-        std::cout << "GL_" << error.c_str() <<" - "<< file << ":" << line << std::endl;
-        err=glGetError();
-    }
-}
-
-
 //void sphere::setTextureCoords()
 //{
 //    float direction[3];

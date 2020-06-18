@@ -1,12 +1,15 @@
 #include "cilinder.h"
 
-Cilinder::Cilinder(int thetaRes, int heightRes, float R, float height, glm::vec3 center)
+#include <glm/gtx/string_cast.hpp>
+
+Cilinder::Cilinder(int thetaRes, int heightRes, float R, float height, glm::vec3 center, glm::vec3 mainAxis)
 {
     m_thetaRes   = thetaRes;
     m_heightRes = heightRes;
     m_height     = height;
     m_radius       = R;
     m_center      = center;
+    m_mainAxis = mainAxis;
 
 }
 
@@ -92,70 +95,73 @@ void Cilinder::setCilinderSurface()
         }
     }
 
+    glm::mat4 tMat = shiftYtoAxisMatrix(m_mainAxis);
+    tMat = glm::translate(tMat, m_center);
+    glm::mat4 tMatNormal = glm::transpose(glm::inverse(tMat));
 
     for (int i = 0; i < m_heightRes-1; i++)
-    {
-        for(int j = 0; j<m_thetaRes -1; j++)
+       {
+           for(int j = 0; j<m_thetaRes -1; j++)
+           {
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i][j], Y[i][j], Z[i][j], 1.0f), //vertex
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
+
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i+1][j], Y[i+1][j], Z[i+1][j], 1.0f),
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
+
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1], 1.0f), //vertex
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+
+
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
+              tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f)));
+
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f)));
+
+           }
+        }
+
+       for (int i = 0; i < m_thetaRes-1; i++)
         {
-            m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i][j], Y[i][j], Z[i][j], 1.0f), //vertex
-                      glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
+           m_cilinderAttributes.push_back(cilinderAttributes(
+           tMat*glm::vec4(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
+           tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
 
-                      m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i+1][j], Y[i+1][j], Z[i+1][j], 1.0f),
-                      glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
+           m_cilinderAttributes.push_back(cilinderAttributes(
+           tMat*glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
+           tMat*glm::vec4(0.0f, 1.0f, 0.0f , 0.0f)));
 
-                      m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1], 1.0f), //vertex
-                     glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+           m_cilinderAttributes.push_back(cilinderAttributes(
+           tMat*glm::vec4(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
+           tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
 
+           }
 
-                      m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-                     glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f)));
+           for (int i = 0; i < m_thetaRes-1; i++)
+           {
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
 
-                      m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-                      glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(0.0f, -m_height/2, 0.0f, 1.0f),
+               tMat*glm::vec4(0.0f, -1.0f, 0.0f , 0.0f)));
 
-                      m_cilinderAttributes.push_back(cilinderAttributes(
-                      glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
-                      glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f)));
+               m_cilinderAttributes.push_back(cilinderAttributes(
+               tMat*glm::vec4(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
 
-        }
-     }
-
-    for (int i = 0; i < m_thetaRes-1; i++)
-     {
-              m_cilinderAttributes.push_back(cilinderAttributes(
-              glm::vec4(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
-              glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
-
-              m_cilinderAttributes.push_back(cilinderAttributes(
-              glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
-              glm::vec4(0.0f, 1.0f, 0.0f , 0.0f)));
-
-              m_cilinderAttributes.push_back(cilinderAttributes(
-              glm::vec4(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
-              glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
-
-        }
-
-        for (int i = 0; i < m_thetaRes-1; i++)
-        {
-            m_cilinderAttributes.push_back(cilinderAttributes(
-            glm::vec4(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
-            glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
-
-            m_cilinderAttributes.push_back(cilinderAttributes(
-            glm::vec4(0.0f, -m_height/2, 0.0f, 1.0f),
-            glm::vec4(0.0f, -1.0f, 0.0f , 0.0f)));
-
-            m_cilinderAttributes.push_back(cilinderAttributes(
-            glm::vec4(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
-            glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
-
-        }
+           }
 
 
         m_verticesSize = m_cilinderAttributes.size();
@@ -198,10 +204,8 @@ void Cilinder::render()
 
     glEnable(GL_CULL_FACE);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, m_verticesSize);
-//    glDrawArrays(GL_LINES, 0, m_verticesSize);
-
     glDisable(GL_CULL_FACE);
 
     m_program.release();
@@ -285,25 +289,5 @@ void Cilinder::setLighting()
     glUniform4fv(u_Mat_specularColorLoc  ,1,glm::value_ptr(Mat_specularColor  ));
     glUniform1f (u_shinenessLoc          ,  shineness                          );
     glUniform4fv(u_expectator_positionLoc,1,glm::value_ptr(expectator_position));
-}
-
-void Cilinder::_check_gl_error(const char *file, int line) {
-    //Ting: sugestao para chamada
-    //_check_gl_error(__FILE__,__LINE__)
-    GLenum err (glGetError());
-    while(err!=GL_NO_ERROR) {
-        std::string error;
-        switch(err) {
-            case GL_INVALID_OPERATION: error="INVALID_OPERATION"; break;
-            case GL_INVALID_ENUM: error="INVALID_ENUM"; break;
-            case GL_INVALID_VALUE: error="INVALID_VALUE"; break;
-            case GL_OUT_OF_MEMORY: error="OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION: error="INVALID_FRAMEBUFFER_OPERATION"; break;
-            case GL_STACK_UNDERFLOW: error="GL_STACK_UNDERFLOW"; break;
-            case GL_STACK_OVERFLOW: error="GL_STACK_OVERFLOW"; break;
-        }
-        std::cout << "GL_" << error.c_str() <<" - "<< file << ":" << line << std::endl;
-        err=glGetError();
-    }
 }
 

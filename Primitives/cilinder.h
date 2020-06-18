@@ -8,12 +8,14 @@
 #include <glm/gtc/type_ptr.hpp>
 //#include <OpenGL.h>
 #include <QGLFunctions>
-#include "vertexarray.h"
-#include "vertexbuffer.h"
-#include "shader.h"
+#include <glm/gtx/transform.hpp>
+#include "../Utilities/vertexarray.h"
+#include "../Utilities/vertexbuffer.h"
+#include "../Utilities/shader.h"
+#include "../Utilities/cgutilities.h"
 
 
-class Cilinder
+class Cilinder : protected CGUtilities
 {
 
    int m_thetaRes;
@@ -21,6 +23,7 @@ class Cilinder
     float m_height;
     float m_radius;
     glm::vec3 m_center;
+    glm::vec3 m_mainAxis;
     bool m_initialized;
 
     typedef struct _cilinder_attributes{
@@ -32,8 +35,6 @@ class Cilinder
     } cilinderAttributes;
 
     std::vector <cilinderAttributes> m_cilinderAttributes;
-    GLuint surface_vbo;
-    GLuint normals_vbo;
 
     VertexBuffer m_vbo;
     VertexArray m_vao;
@@ -45,12 +46,13 @@ class Cilinder
     void setLighting();
 
 public:
-    Cilinder(int thetaRes = 30, int heightRes = 30, float R = 0.25f, float height = 0.5f, glm::vec3 center = glm::vec3(0.0));
+
+    Cilinder(int thetaRes = 30, int heightRes = 30, float R = 0.25f, float height = 0.5f,
+             glm::vec3 center = glm::vec3(0.0), glm::vec3 mainAxis = glm::vec3(0.0, 1.0, 0.0));
     void initialize();
     void setProjectionMatrix(glm::mat4 projectionMatrix);
     void setMVMatrix(glm::mat4 mvMatrix);
     void render();
-    void _check_gl_error(const char *file, int line);
 };
 
 #endif // CILINDER_H

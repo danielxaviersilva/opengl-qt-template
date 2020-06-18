@@ -3,7 +3,7 @@
 
 #include <QOpenGLFunctions>
 #include <vector>
-#include <vertexbuffer.h>
+#include "vertexbuffer.h"
 
 
 class VertexArray

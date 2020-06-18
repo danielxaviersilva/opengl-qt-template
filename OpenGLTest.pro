@@ -15,16 +15,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        camera.cpp \
-        cilinder.cpp \
-        cube.cpp \
-        indexbuffer.cpp \
+        Primitives/cilinder.cpp \
+        Primitives/cube.cpp \
+        Primitives/sphere.cpp \
+        Utilities/camera.cpp \
+        Utilities/cgutilities.cpp \
+        Utilities/indexbuffer.cpp \
+        Utilities/shader.cpp \
+        Utilities/vertexarray.cpp \
+        Utilities/vertexbuffer.cpp \
         lightsource.cpp \
         main.cpp \
-        shader.cpp \
-        sphere.cpp \
-        vertexarray.cpp \
-        vertexbuffer.cpp \
         window.cpp
 
 
@@ -37,16 +38,17 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    camera.h \
-    cilinder.h \
-    cube.h \
-    indexbuffer.h \
+    Primitives/cilinder.h \
+    Primitives/cube.h \
+    Primitives/sphere.h \
+    Utilities/camera.h \
+    Utilities/cgutilities.h \
+    Utilities/indexbuffer.h \
+    Utilities/shader.h \
+    Utilities/vertexarray.h \
+    Utilities/vertexbuffer.h \
     lightsource.h \
     openGLAdditionals.h \
-    shader.h \
-    sphere.h \
-    vertexarray.h \
-    vertexbuffer.h \
     window.h
 
 DISTFILES += \
@@ -56,5 +58,3 @@ DISTFILES += \
     renderLightning.vert \
     shader.frag \
     shader.vert \
-    shaderL2Q6.frag \
-    shaderL2Q6.vert

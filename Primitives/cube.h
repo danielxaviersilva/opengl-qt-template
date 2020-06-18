@@ -1,5 +1,5 @@
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef CUBE_H
+#define CUBE_H
 
 #include <iostream>
 #include <vector>
@@ -8,38 +8,44 @@
 #include <glm/gtc/type_ptr.hpp>
 //#include <OpenGL.h>
 #include <QGLFunctions>
-#include "vertexarray.h"
-#include "vertexbuffer.h"
-#include "shader.h"
 
-//describes sphere that each coordinate is in vec4 form (x,y,z alfa=1).
+#include "../Utilities/indexbuffer.h"
+#include "../Utilities/vertexarray.h"
+#include "../Utilities/vertexbuffer.h"
+#include "../Utilities/shader.h"
+#include "../Utilities/cgutilities.h"
 
 
-class Sphere
+
+class Cube : protected CGUtilities
 {
-    int m_thetaRes;
-    int m_phiRes;
-    int m_sphereSize;
-    int m_spherePoints;
-    float m_radius;
+
+
+
+    int m_cubeCount;
+
+    float     m_edge;
     glm::vec3 m_center;
+    glm::vec3 m_mainAxis;
 
     bool m_initialized;
 
-    typedef struct _sphere_attributes{
+    typedef struct _cube_attributes{
         glm::vec4 vertex;
         glm::vec4 normal;
 //        glm::vec2 textureCoords;
-        _sphere_attributes(glm::vec4 inVertex, glm::vec4 inNormal): vertex(inVertex), normal(inNormal){};
+        _cube_attributes(glm::vec4 inVertex, glm::vec4 inNormal): vertex(inVertex), normal(inNormal){};
 
-    } sphereAttributes;
+    } cubeAttributes;
 
-    std::vector <sphereAttributes> m_sphereAttributes;
+    std::vector <cubeAttributes> m_cubeAttributes;
+
     GLuint surface_vbo;
     GLuint normals_vbo;
 
     VertexBuffer m_vbo;
     VertexArray m_vao;
+    IndexBuffer m_idxBuffer;
     shader m_program;
 
     float m_verticesSize;
@@ -47,34 +53,26 @@ class Sphere
 public:
    // sphere();
 //    Sphere(int theta = 30, int phi = 30, float r = 0.5, float xc = 0, float yc = 0, float zc = 0);
-    Sphere(int theta = 30, int phi = 30, float r = 0.5, glm::vec3 center = glm::vec3(0.0f));
+    Cube(float edge = 0.25, glm::vec3 center = glm::vec3(0.0f), glm::vec3 rotationAxis = glm::vec3(0.0f,1.0f,0.0f));
 
     void initialize();
 
-    void setSphereSurface();
-    void setSphereNormal();
-
-
+    void setCubeSurface();
+    void setLighting();
 //    void setTextureCoords();
-
-    int getThetaRes();
-    int getPhiRes();
-    int getSphereSize();
-    int getSpherePoints();
 
 
     float getRadius() const;
 
-//    void uploadSphere();
-
     void setProjectionMatrix(glm::mat4 projectionMatrix);
     void setMVMatrix(glm::mat4 mvMatrix);
-    void setLighting();
     void render();
-
 
 private:
     void _check_gl_error(const char *file, int line);
+
+
+
 };
 
-#endif // SPHERE_H
+#endif // CUBE_H

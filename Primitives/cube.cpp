@@ -1,10 +1,9 @@
 #include "cube.h"
 
-Cube::Cube(float edge, glm::vec3 center, glm::vec3 rotationAxis, float angleRotation):
+Cube::Cube(float edge, glm::vec3 center, glm::vec3 rotationAxis):
              m_edge         (edge),
              m_center       (center),
-             m_rotationAxis (rotationAxis),
-             m_angleRotation(angleRotation)
+             m_mainAxis (rotationAxis)
 {
 
 }
@@ -55,37 +54,42 @@ void Cube::initialize()
 void Cube::setCubeSurface()
 {
 
-    m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3(-1.0,-1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3(-1.0,-1.0,-1.0f)), 0.0f))); //normals
+    glm::mat4 tMat = shiftYtoAxisMatrix(m_mainAxis);
+    tMat = glm::translate(tMat, m_center);
+    glm::mat4 tMatNormal = glm::transpose(glm::inverse(tMat));
+
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3(-1.0,-1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3(-1.0,-1.0, 1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3(-1.0,-1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3(-1.0,-1.0,-1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3(-1.0, 1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3(-1.0, 1.0,-1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3(-1.0,-1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3(-1.0,-1.0, 1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3(-1.0, 1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3(-1.0, 1.0, 1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3(-1.0, 1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3(-1.0, 1.0,-1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3( 1.0,-1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3( 1.0,-1.0,-1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3(-1.0, 1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3(-1.0, 1.0, 1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3( 1.0,-1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3( 1.0,-1.0, 1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3( 1.0,-1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3( 1.0,-1.0,-1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3( 1.0, 1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3( 1.0, 1.0,-1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3( 1.0,-1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3( 1.0,-1.0, 1.0f)), 0.0f))); //normals
 
     m_cubeAttributes.push_back(cubeAttributes(
-    glm::vec4(glm::vec3( 1.0, 1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
-    glm::vec4(glm::normalize(glm::vec3( 1.0, 1.0, 1.0f)), 0.0f))); //normals
+    tMat*glm::vec4(glm::vec3( 1.0, 1.0,-1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3( 1.0, 1.0,-1.0f)), 0.0f))); //normals
+
+    m_cubeAttributes.push_back(cubeAttributes(
+    tMat*glm::vec4(glm::vec3( 1.0, 1.0, 1.0f)*(m_edge/2), 1.0f), //vertex
+    tMatNormal*glm::vec4(glm::normalize(glm::vec3( 1.0, 1.0, 1.0f)), 0.0f))); //normals
 
         unsigned int idxSet[] = {0,1,2,
                                  2,1,3,

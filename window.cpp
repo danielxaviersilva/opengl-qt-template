@@ -1,19 +1,25 @@
 #include "window.h"
 #include <iostream>
-#include "shader.h"
+
 #include "openGLAdditionals.h"
 
 
 #include <glm/glm.hpp>
 //#include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtx/string_cast.hpp>
-#include "indexbuffer.h"
-#include "vertexbuffer.h"
-#include "vertexarray.h"
-#include "camera.h"
-#include "sphere.h"
-#include "cube.h"
-#include "cilinder.h"
+#include "./Utilities/shader.h"
+#include "./Utilities/indexbuffer.h"
+#include "./Utilities/vertexbuffer.h"
+#include "./Utilities/vertexarray.h"
+#include "./Utilities/camera.h"
+
+#include "./Primitives/sphere.h"
+#include "./Primitives/cube.h"
+#include "./Primitives/cilinder.h"
+
+
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 using namespace std;
 
@@ -28,8 +34,9 @@ uint vbo_temp3;
 VertexBuffer *vbo = new VertexBuffer[3];
 VertexArray *vao = new VertexArray[1];
 Camera cam;
-Cube c1;
-Cilinder cilinder1(10,5);
+Cube cube1(0.25,glm::vec3(0.5,0.5,0.0), glm::vec3(1.0,1.0,0.0));
+Cilinder cilinder1(30, 30,0.1f,
+                  0.5f,glm::vec3(0.0),glm::vec3(1.0, 0.0, 0.0));
 
 
 
@@ -124,12 +131,8 @@ void Window::initializeGL()
       sphere1.initialize();
       sphere2.initialize();
       sphere3.initialize();
-      c1.initialize();
+      cube1.initialize();
       cilinder1.initialize();
-
-
-//      std::cout << "Aresta: " << glm::to_string(eq_aresta[0]) << glm::to_string(eq_aresta[1]) << glm::to_string(eq_aresta[2]) <<std::endl;
-
 
     gpuProgram.loadProgram("./hello.vert","./hello.frag");
     loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
@@ -153,8 +156,6 @@ void Window::initializeGL()
 //    glEnable(GL_BLEND);
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //    glEnable(GL_CULL_FACE);
-
-
 }
 
 
@@ -175,9 +176,9 @@ void Window::paintGL()
 
 
 
-//    c1.setProjectionMatrix(cam.projection());
-//    c1.setMVMatrix(cam.view());
-//    c1.render();
+    cube1.setProjectionMatrix(cam.projection());
+    cube1.setMVMatrix(cam.view());
+    cube1.render();
 
 //    glEnable(GL_CULL_FACE);
 
