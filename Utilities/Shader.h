@@ -8,21 +8,20 @@
 #include <vector>
 
 
-class shader
+class Shader
 {
     unsigned int vertShader, fragShader, program;
     bool isProgramLinked;
+    std::string m_pathVertShader, m_pathFragShader;
 public:
-    shader();
-    shader(const char * vert_path, const char * frag_path);
-    shader(std::string vert_path, std::string frag_path);
-
+    Shader();
+    Shader(const char * vert_path, const char * frag_path);
+    Shader(std::string vert_path, std::string frag_path);
     void loadProgram(const char * vert_path, const char * frag_path);
 
-    ~shader();
+    ~Shader();
 
     unsigned int getProgramID();
-
     uint LoadShader(const char *vertex_path, const char *fragment_path);
 
     bool loadVertexShader(const char *vert_path);
@@ -37,6 +36,8 @@ public:
 
     //aux functions
     std::string readText(const char *filePath);
+    int getAttribLocation(std::string varName);
+    int getUniformLocation(std::string varName);
 };
 
 #endif // SHADER_H

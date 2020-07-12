@@ -1,4 +1,4 @@
-#include "cgutilities.h"
+#include "CGUtilities.h"
 
 CGUtilities::CGUtilities()
 {
@@ -38,5 +38,18 @@ glm::mat4 CGUtilities::shiftYtoAxisMatrix(glm::vec3 axis)
     glm::mat4 tMat = zRot*xRot;
 
     return (tMat);
+}
+
+glm::mat4 CGUtilities::shiftZtoAxisMatrix(glm::vec3 axis)
+{
+    glm::vec3 normAxis = glm::normalize(axis);
+    float beta = asin(normAxis.y);
+    float gamma = (abs(cos(beta)) > 0.0000001) ? acos(normAxis.x/cos(beta)) : 0.0f;
+
+    glm::mat4 xRot = glm::rotate(beta, glm::vec3(1.0,0.0,0.0));
+    glm::mat4 yRot = glm::rotate(gamma, glm::vec3(0.0,1.0,0.0));
+    glm::mat4 tMat = yRot*xRot;
+
+    return tMat;
 }
 

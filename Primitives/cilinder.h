@@ -9,10 +9,11 @@
 //#include <OpenGL.h>
 #include <QGLFunctions>
 #include <glm/gtx/transform.hpp>
-#include "../Utilities/vertexarray.h"
-#include "../Utilities/vertexbuffer.h"
-#include "../Utilities/shader.h"
-#include "../Utilities/cgutilities.h"
+#include "../Utilities/VertexArray.h"
+#include "../Utilities/VertexBuffer.h"
+#include "../Utilities/IndexBuffer.h"
+#include "../Utilities/Shader.h"
+#include "../Utilities/CGUtilities.h"
 
 
 class Cilinder : protected CGUtilities
@@ -34,13 +35,14 @@ class Cilinder : protected CGUtilities
 
     } cilinderAttributes;
 
-    std::vector <cilinderAttributes> m_cilinderAttributes;
+//    std::vector <cilinderAttributes> m_cilinderAttributes;
 
     VertexBuffer m_vbo;
     VertexArray m_vao;
-    shader m_program;
+    IndexBuffer m_idxBuffer;
+    Shader m_program;
 
-    float m_verticesSize;
+//    float m_verticesSize;
 
     void setCilinderSurface();
     void setLighting();

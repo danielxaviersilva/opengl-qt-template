@@ -7,7 +7,8 @@
 //#include <QOpenGLVertexArrayObject>
 #include <QDebug>
 #include <QKeyEvent>
-//#include "openGLAdditionals.h"
+#include "./Utilities/Camera.h"
+#include "LightSource.h"
 
 class QOpenGLShaderProgram;
 
@@ -20,13 +21,19 @@ class Window : public QOpenGLWindow
 public:
   ~Window();
 
-  void initializeGL();
-  void resizeGL(int width, int height);
-  void paintGL();
+  void initializeGL() override;
+  void resizeGL(int width, int height) override;
+  void paintGL() override;
   void teardownGL();
   void show_variables();
 
 private:
+  Camera m_camera;
+  LightSource m_lightSource;
+  int m_currentWidth, m_currentHeight;
+  void viewPort();
+
+
   // OpenGL State Information
 //    QOpenGLBuffer m_vertex[4];
 //    QOpenGLVertexArrayObject m_object;
@@ -38,7 +45,7 @@ protected:
 //  void mousePressEvent(QMouseEvent *ev);
 //  void moveEvent(QMoveEvent *ev);
 //     void voidmouseMoveEvent(QMouseEvent *ev);
-  void keyPressEvent(QKeyEvent *event);
+  void keyPressEvent(QKeyEvent *event) override;
 //  void keyReleaseEvent(QKeyEvent *event);
 //  void mousePressEvent(QMouseEvent *event);
 //  void mouseReleaseEvent(QMouseEvent *event);

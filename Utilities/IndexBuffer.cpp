@@ -1,4 +1,4 @@
-#include "indexbuffer.h"
+#include "IndexBuffer.h"
 #include <iostream>
 
 //IndexBuffer::IndexBuffer()
@@ -10,24 +10,35 @@
 
 IndexBuffer::IndexBuffer(const unsigned int *data, int count)
 {
-    glGenBuffers(1,&m_vboID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboID);
+    glGenBuffers(1,&m_iboID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iboID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(unsigned int), data, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iboID);
     _check_gl_error(__FILE__, __LINE__);
     m_initialized = true;
 }
 
 IndexBuffer::~IndexBuffer()
 {
-    glDeleteBuffers(1, &m_vboID);
+    glDeleteBuffers(1, &m_iboID);
+}
+
+void IndexBuffer::genBuffer()
+{
+    if (!m_initialized){
+        glGenBuffers(1,&m_iboID);
+        m_initialized = true;
+        return;
+    }
+    std::cerr << "Warning: Buffer already initialized e generated for this class" << std::endl;
+
 }
 
 void IndexBuffer::updateBufferData(const unsigned int *data, unsigned int count)
 {
     if (!m_initialized)
-        glGenBuffers(1,&m_vboID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboID);
+        glGenBuffers(1,&m_iboID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iboID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,count*sizeof(unsigned int),data, GL_STATIC_DRAW);
     _check_gl_error(__FILE__, __LINE__);
     m_initialized = true;
@@ -36,9 +47,9 @@ void IndexBuffer::updateBufferData(const unsigned int *data, unsigned int count)
 void IndexBuffer::bind()
 {
     if (m_initialized)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboID);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iboID);
     else
-        std::cerr << "Buffer not initialized" << std:: endl;
+        std::cerr << "Index Buffer not initialized" << std:: endl;
     _check_gl_error(__FILE__, __LINE__);
 }
 

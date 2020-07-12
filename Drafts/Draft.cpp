@@ -34,6 +34,77 @@
 using namespace std;
 
 
+Shader gpuProgram;
+Shader gpuLightSphere;
+//uint vbo[2];
+
+uint vbo_vc;
+uint vbo_temp3;
+
+VertexBuffer *vbo = new VertexBuffer[3];
+VertexArray *vao = new VertexArray[1];
+
+
+
+
+Cube cube1(0.25,glm::vec3(0.5,0.5,0.0), glm::vec3(0.0,1.0,0.0));
+Cilinder cilinder1(50, 50,0.5f, 0.7f,glm::vec3(0.0),glm::vec3(0.0, 1.0, 0.0));
+
+SphereSet SS1(100,100);
+
+
+
+
+// Create a colored triangle
+Sphere sphere2(25,25,0.125, glm::vec3(-0.0f,0.0f, 0.0f));
+
+
+
+vector<float> vertices =  { .75f,  .75f,   0.0f, 1.0f,
+                            0.75f, -0.75f, 0.0f, 1.0f,
+                           -0.75f, -0.75f, 0.0f, 1.0f};
+
+vector<float>  color ={ 1.0f, 1.0f, 1.0f, 0.5f,
+                        1.0f, 1.0f, 1.0f, 0.5f,
+                        1.0f, 1.0f, 1.0f, 0.5f};
+
+typedef struct _scaleOffset{
+    float scale;
+    glm::vec3 offset;
+} scaleOffset;
+
+
+typedef struct _vertexAttr{
+   glm::vec4 vertex;
+   glm::vec4 color;
+   glm::vec2 texCoord;
+   _vertexAttr(glm::vec4 inVertex, glm::vec4 inColor, glm::vec2 inTexCoord): vertex(inVertex), color(inColor), texCoord(inTexCoord){};
+
+//   float vertex[4];
+//   float color[4];
+//   _vertexAttr(float *inVertex, float *inColor): vertex(inVertex), color(inColor){};
+
+} VertexAttr;
+
+float a = 0.2;
+std::vector<glm::vec3> eq_aresta{glm::vec3(-0.5, -sqrt(3)/6, 0),
+                                 glm::vec3(0.5,  -sqrt(3)/6, 0),
+                                 glm::vec3(0, sqrt(3)/3, 0)};
+
+vector<VertexAttr> temp2{{glm::vec4(-1.0f,-1.0f, 0.0f,  1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f,1.0f)},
+                         {glm::vec4(1.0f,-1.0f, 0.0f,  1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f,1.0f)},
+                         {glm::vec4(1.0f,1.0f, 0.0f,  1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f,0.0f)},
+                         {glm::vec4(-1.0f,1.0f, 0.0f,  1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f,0.0f)}/*
+*/
+                        };
+uint VAO[3];
+
+int loc_attribute_Position;
+int loc_attribute_Color;
+int loc_attribute_texCoord;
+int loc_displacement;
+int loc_scale;
+
 
 int t = 11, f = 12;
 SphereODF ODF1(t, f);
@@ -57,7 +128,16 @@ void Window::initializeGL()
 
 
       initializeOpenGLFunctions();
+      test.uploadTexture("./mickey.jpg");
 
+      SS1.initialize();
+      SS1.addSphere(0.25, glm::vec3(-0.0f,0.0f,0.0f));
+      SS1.addSphere(0.125, glm::vec3(0.5f,-0.5f,0.0f), glm::vec3(1.0,1.0,0.0));
+//      SS1.setMaterialLighting(glm::vec4(1.0f,0.71f ,.75f, 1.0f),glm::vec4(1.0f,0.71f ,.75f, 1.0f), glm::vec4(0.6f,.6f ,.6f, 1.0f), 25.0f);
+//      SS1.setLightSource();
+//      SS1.addSphere(0.25, glm::vec3(-0.5f,-0.5f,0.0f));
+//      SS1.addSphere(0.25, glm::vec3(0.5f,0.5f,0.0f));
+//      SS1.addSphere(0.25, glm::vec3(0.5f,-0.5f,0.0f));
 
       m_lightSource.setAmbient(glm::vec4(1.5f, 0.5f,0.5f,1.0f));
       m_lightSource.setPosition(glm::vec4(0.0f, 0.0f,0.0f,1.0f));
@@ -75,6 +155,16 @@ void Window::initializeGL()
 //          psi = pow(psi, 3);
 
       ODF1.addThreeAngleGlyph(Psi874797, 0.5f);
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -98,18 +188,55 @@ void Window::initializeGL()
 
 //      ODF1.addSphere(ODFpar3,glm::vec3(.5f));
 
+      cube1.initialize();
+      cilinder1.initialize();
+
+    gpuProgram.loadProgram("./hello.vert","./hello.frag");
+    loc_attribute_Position =glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Position");
+    loc_attribute_Color = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_Color");
+    loc_attribute_texCoord = glGetAttribLocation(gpuProgram.getProgramID(),"attribute_texCoord")/*FAZER VARIAVEL*/;
+    loc_displacement = glGetAttribLocation(gpuProgram.getProgramID(),"displacement");
+    loc_scale = glGetAttribLocation(gpuProgram.getProgramID(),"scale");
+
+    gpuProgram.useProgram();
+
+    int temp = glGetUniformLocation(gpuProgram.getProgramID(), "u_Texture");
+    glUniform1i(temp, slot);
+
 //    gpuProgram.programVarInfo();
 
+    std::vector<scaleOffset> m_scaleOffset{
+        {1.0f,glm::vec3(0.0f,0.0f,0.0f)},
+        {0.5f,glm::vec3(-0.5f, 0.0f,-0.5f)},
+        {0.5f,glm::vec3( 0.5f, 0.0f,-0.5f)},
+        {0.3f,glm::vec3( 0.0f,-0.5f,-0.5f)},
+        {0.3f,glm::vec3( 0.0f, 0.5f,-0.5f)}
+    };
 
+
+    vbo[0].updateBufferData(temp2.data(),temp2.size()*sizeof(VertexAttr));
+    vbo[1].updateBufferData(m_scaleOffset.data(), m_scaleOffset.size()*sizeof(scaleOffset));
+
+    vao->push<float>(loc_attribute_Position, 4);
+    vao->push<float>(loc_attribute_Color, 4);
+    vao->push<float>(loc_attribute_texCoord, 2);
+    vao->addBuffer(vbo[0]);
+    vao->clearLayout();
+    vao->push<float>(loc_scale, 1, GL_FALSE, VertexArray::INSTANTIATION_MODE::INSTANCED, 1);
+    vao->push<float>(loc_displacement, 3, GL_FALSE, VertexArray::INSTANTIATION_MODE::INSTANCED, 1);
+    vao->addBuffer(vbo[1]);
     _check_gl_error(__FILE__,__LINE__);
 
-
+    m_camera.setMvpMatrixLoc(gpuProgram.getProgramID(), "mvpMatrix");
+    m_camera.updateMvpMatrix();
     _check_gl_error(__FILE__, __LINE__);
 
 
 //    printContextInformation();
+    glEnable(GL_DEPTH_TEST);
 //    glEnable(GL_BLEND);
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
 }
 
 
@@ -123,13 +250,53 @@ void Window::paintGL()
     float bg[] = {0.0f,0.0f,0.0f,1.0};
     glClear( GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
-
     renderCrossLine();
 
+//    cilinder1.setProjectionMatrix(cam.projection());
+//    cilinder1.setMVMatrix(cam.view());
+//    cilinder1.render();
+
+//    cube1.setProjectionMatrix(cam.projection());
+//    cube1.setMVMatrix(cam.view());
+//    cube1.render();
+
+//    sphere2.setProjectionMatrix(cam.projection());
+//    sphere2.setMVMatrix(cam.view());
+//    sphere2.render();
+
+
+//    sphere1.setProjectionMatrix(cam.projection());
+//    sphere1.setMVMatrix(cam.view());
+//    sphere1.render();
+
+//    sphere3.setProjectionMatrix(cam.projection());
+//    sphere3.setMVMatrix(cam.view());
+//    sphere3.render();
+//    glDisable(GL_CULL_FACE);
+
+//    SS1.setProjectionMatrix(m_camera.projection());
+//    SS1.setMVMatrix(m_camera.view());
+//    SS1.render();
 
    ODF1.setProjectionMatrix(m_camera.projection());
    ODF1.setMVMatrix(m_camera.view());
    ODF1.render();
+
+
+
+
+//    gpuProgram.useProgram();
+
+//    m_camera.updateMvpMatrix();
+//    vao->bind();
+//    test.Bind(slot);
+//    _check_gl_error(__FILE__, __LINE__);
+//    unsigned int pidx[] = {0,1,2, 0, 2, 3};
+//    IndexBuffer idx((pidx), 6);
+//    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, 5);
+////    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    vao->unbind();
+//    gpuProgram.release();
 
     update();
 
@@ -139,6 +306,8 @@ void Window::paintGL()
 void Window::teardownGL()
 {
     glUseProgram(0);
+    gpuProgram.release();
+    delete[] vbo;
     exit(0);
 }
 

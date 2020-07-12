@@ -29,14 +29,17 @@ void Cube::initialize()
 
            m_vao.bind();
 
-           m_vao.push<float>(locVertex, 4);
-           m_vao.push<float>(locNormal, 4);
-   //        m_vao.push<float>(-1, 2); //Reserved for texture, which is not being used
+
 
            //Calculate the vertices and assign to buffer m_vbo
            setCubeSurface();
 
+           m_vao.push<float>(locVertex, 4);
+           m_vao.push<float>(locNormal, 4);
            m_vao.addBuffer(m_vbo);
+   //        m_vao.push<float>(-1, 2); //Reserved for texture, which is not being used
+
+
            setLighting();
 
            //create vertices of a sphere centered at the origin
@@ -95,14 +98,14 @@ void Cube::setCubeSurface()
                                  2,1,3,
                                  4,6,5,
                                  5,6,7,
-                               0,4,1,
-                               1,4,5,
-                               2,3,6,
-                               6,3,7,
-                               0,2,4,
-                               4,2,6,
-                               1,5,3,
-                               3,5,7}; //reference to the vertex in the way it makes triangles
+                                 0,4,1,
+                                 1,4,5,
+                                 2,3,6,
+                                 6,3,7,
+                                 0,2,4,
+                                 4,2,6,
+                                 1,5,3,
+                                 3,5,7}; //reference to the vertex in the way it makes triangles
 
         m_idxBuffer.updateBufferData(idxSet, (unsigned int)sizeof(idxSet)/sizeof(unsigned int));
         m_idxBuffer.unbind();
@@ -125,7 +128,7 @@ void Cube::render()
     m_vao.bind();
     m_idxBuffer.bind();
     glEnable(GL_CULL_FACE);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glDisable(GL_CULL_FACE);

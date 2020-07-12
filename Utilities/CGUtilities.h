@@ -12,6 +12,7 @@ protected:
     CGUtilities();
     void _check_gl_error(const char *file, int line);
      glm::mat4 shiftYtoAxisMatrix(glm::vec3 axis);
+     glm::mat4 shiftZtoAxisMatrix(glm::vec3 axis);
 
 
 

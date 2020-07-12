@@ -1,4 +1,4 @@
-#include "vertexbuffer.h"
+#include "VertexBuffer.h"
 #include <iostream>
 
 //VertexBuffer::VertexBuffer()
@@ -22,6 +22,17 @@ VertexBuffer::~VertexBuffer()
     glDeleteBuffers(1, &m_vboID);
 }
 
+void VertexBuffer::genBuffer()
+{
+    if (!m_initialized){
+        glGenBuffers(1,&m_vboID);
+        m_initialized = true;
+        return;
+    }
+    std::cerr << "Warning: Buffer already initialized e generated for this class" << std::endl;
+
+}
+
 void VertexBuffer::updateBufferData(const void *data, int size)
 {
     if (!m_initialized)
@@ -36,15 +47,13 @@ void VertexBuffer::bind()
     if (m_initialized)
         glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
     else
-        std::cerr << "Buffer not initialized" << std:: endl;
+        std::cerr << "Vertex Buffer not initialized" << std:: endl;
 }
 
 void VertexBuffer::unbind()
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
-
 
 void VertexBuffer::_check_gl_error(const char *file, int line) {
     //sugestao para chamada

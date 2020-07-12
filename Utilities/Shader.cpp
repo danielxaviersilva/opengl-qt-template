@@ -1,56 +1,33 @@
-#include "shader.h"
+#include "Shader.h"
 #include <vector>
 
-shader::shader()
+Shader::Shader()
 {
 }
 
-shader::shader(const char *vert_path, const char *frag_path)
+Shader::Shader(const char *vert_path, const char *frag_path)
 {
-    program = glCreateProgram();
-    isProgramLinked = false;
 
-    bool isVertexShaderLoaded   =  loadVertexShader(vert_path);
-    bool isFragmentShaderLoaded = loadFragmentShader(frag_path);
-
-    if (!(isVertexShaderLoaded && isFragmentShaderLoaded))
-        return;
-
-    glAttachShader(program, vertShader);
-    glAttachShader(program, fragShader);
-    isProgramLinked = linkProgram();
-
-    glDeleteShader(vertShader);
-    glDeleteShader(fragShader);
+    loadProgram(vert_path,frag_path);
 }
 
-shader::shader(std::string vert_path, std::string frag_path)
+Shader::Shader(std::string vert_path, std::string frag_path):
+    m_pathVertShader(vert_path), m_pathFragShader(frag_path)
 {
     const char *vert_pathSrc = vert_path.c_str();
     const char *frag_pathSrc = frag_path.c_str();
 
-    program = glCreateProgram();
-    isProgramLinked = false;
-
-    bool isVertexShaderLoaded   =  loadVertexShader(vert_pathSrc);
-    bool isFragmentShaderLoaded = loadFragmentShader(frag_pathSrc);
-
-    if (!(isVertexShaderLoaded && isFragmentShaderLoaded))
-        return;
-
-    glAttachShader(program, vertShader);
-    glAttachShader(program, fragShader);
-    isProgramLinked = linkProgram();
-
-    glDeleteShader(vertShader);
-    glDeleteShader(fragShader);
+    loadProgram(vert_path.c_str(),frag_path.c_str());
 
 }
 
-void shader::loadProgram(const char *vert_path, const char *frag_path)
+void Shader::loadProgram(const char *vert_path, const char *frag_path)
 {
     program = glCreateProgram();
     isProgramLinked = false;
+
+    m_pathVertShader = vert_path;
+    m_pathFragShader = frag_path;
 
     bool isVertexShaderLoaded   =  loadVertexShader(vert_path);
     bool isFragmentShaderLoaded = loadFragmentShader(frag_path);
@@ -68,7 +45,7 @@ void shader::loadProgram(const char *vert_path, const char *frag_path)
 
 }
 
-shader::~shader()
+Shader::~Shader()
 {
 
     if(program > 0)
@@ -77,14 +54,14 @@ shader::~shader()
 
 }
 
-unsigned int shader::getProgramID()
+unsigned int Shader::getProgramID()
 {
     return program;
 }
 
 
 
-bool shader::loadVertexShader(const char *vert_path)
+bool Shader::loadVertexShader(const char *vert_path)
 {
 
     vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -109,7 +86,7 @@ bool shader::loadVertexShader(const char *vert_path)
 
 }
 
-bool shader::loadFragmentShader(const char* frag_path)
+bool Shader::loadFragmentShader(const char* frag_path)
 {
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -135,7 +112,7 @@ bool shader::loadFragmentShader(const char* frag_path)
     return result;
 }
 
-bool shader::linkProgram()
+bool Shader::linkProgram()
 {
     GLint result = GL_FALSE;
     int logLength;
@@ -154,7 +131,7 @@ bool shader::linkProgram()
     return result;
 }
 
-bool shader::useProgram()
+bool Shader::useProgram()
 {
     if (!program)
     {
@@ -170,7 +147,7 @@ bool shader::useProgram()
     return true;
 }
 
-void shader::programVarInfo()
+void Shader::programVarInfo()
 {
     if (!program)
     {
@@ -217,12 +194,12 @@ void shader::programVarInfo()
     std::cout <<"------------------------------------------------" << std::endl;
 }
 
-void shader::release()
+void Shader::release()
 {
     glUseProgram(0);
 }
 
-std::string shader::readText(const char *filePath)
+std::string Shader::readText(const char *filePath)
 {
     std::string content;
        std::ifstream fileStream(filePath, std::ios::in);
@@ -239,5 +216,25 @@ std::string shader::readText(const char *filePath)
        }
        fileStream.close();
        return content;
+
+}
+
+int Shader::getAttribLocation(std::string varName)
+{
+    int varLoc = glGetAttribLocation(program, varName.c_str());
+    if (varLoc == -1)
+        std::cerr << "Warning: Attribute " << varName << " not found in shaders " <<
+                     m_pathVertShader << "; "<< m_pathFragShader << std::endl;
+    return varLoc;
+
+}
+
+int Shader::getUniformLocation(std::string varName)
+{
+    int varLoc = glGetUniformLocation(program, varName.c_str());
+    if (varLoc == -1)
+        std::cerr << "Warning: Uniform " << varName << " not found in shaders " <<
+                     m_pathVertShader.c_str() << "; "<< m_pathFragShader.c_str() << std::endl;
+    return varLoc;
 
 }

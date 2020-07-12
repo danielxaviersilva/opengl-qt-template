@@ -35,12 +35,10 @@ void Sphere::initialize()
         setSphereSurface();
 
         m_vao.addBuffer(m_vbo);
-
         setLighting();
 
         m_vao.unbind();
         m_program.release();
-
     }
 
 }
@@ -74,6 +72,7 @@ void Sphere::setMVMatrix(glm::mat4 mvMatrix)
 
 void Sphere::setSphereSurface()
 {
+    std::vector <sphereAttributes> sphereAttributesBuffer;
     float * phi;
     float * theta;
 
@@ -95,8 +94,9 @@ void Sphere::setSphereSurface()
         Z[count] = new float [m_thetaRes];
     }
 
+    //Domain Intervals:theta: [0,2pi); phi: [pi/2, -pi/2]
     for (int i = 0; i < m_thetaRes; i++)
-        theta[i] = 2*(M_PI)*i/(m_thetaRes - 1);
+        theta[i] = 2*(M_PI)*i/(m_thetaRes);
 
     for (int i = 0; i < m_phiRes; i++)
         phi[i] = M_PI/2 - M_PI*i/(m_phiRes - 1);
@@ -106,45 +106,53 @@ void Sphere::setSphereSurface()
         for (int j = 0; j< m_thetaRes; j++)
         {
             X[i][j] = m_radius*(cos(phi[i])*cos(theta[j]));
-            Y[i][j] = m_radius*(cos(phi[i])*sin(theta[j]));
-            Z[i][j] = m_radius*(sin(phi[i]));
+            Y[i][j] = m_radius*(sin(phi[i]));
+            Z[i][j] = m_radius*(cos(phi[i])*sin(theta[j]));
         }
     }
-    for (int i = 0; i < m_phiRes-1; i++)
+
+    std::vector<unsigned int> idxSet;
+    idxSet.reserve(6*m_thetaRes*(m_phiRes-1));
+    for (int i = 0; i < m_phiRes; i++)
     {
-        for(int j = 0; j<m_thetaRes -1; j++)
+        for(int j = 0; j<m_thetaRes; j++)
         {
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j] + m_center[0], Y[i+1][j] + m_center[1], Z[i+1][j] + m_center[2], 1.0f),
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
 
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
+              sphereAttributesBuffer.push_back(sphereAttributes(
+              glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
+              glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
 
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
-
-          m_sphereAttributes.push_back(sphereAttributes(
-          glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
-          glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f))); //normals
-
-
+              if (i < m_phiRes -1)
+              {
+                    idxSet.emplace_back(i*m_thetaRes + j                   );
+                    idxSet.emplace_back((i+1)*m_thetaRes + j               );
+                    idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
+                    idxSet.emplace_back(i*m_thetaRes + j                   );
+                    idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
+                    idxSet.emplace_back(i*m_thetaRes + (j+1)%m_thetaRes    );
+              }
         }
      }
-        m_verticesSize = m_sphereAttributes.size();
-        m_vbo.updateBufferData(m_sphereAttributes.data(), m_sphereAttributes.size()*sizeof(sphereAttributes));
+
+        m_verticesSize = idxSet.size();//sphereAttributesBuffer.size();
+        m_vbo.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(sphereAttributes));
         _check_gl_error(__FILE__,__LINE__);
 
+
+        m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
+        m_idxBuffer.unbind();
+        _check_gl_error(__FILE__,__LINE__);
+
+        for (int count = 0; count < m_phiRes; count++)
+        {
+            delete [] X[count];
+            delete [] Y[count];
+            delete [] Z[count];
+        }
+
+        delete [] X;
+        delete [] Y;
+        delete [] Z;
 }
 
 void Sphere::render()
@@ -156,17 +164,22 @@ void Sphere::render()
     }
     m_program.useProgram();
     m_vao.bind();
+    m_idxBuffer.bind();
 
     glEnable(GL_CULL_FACE);
 
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawArrays(GL_TRIANGLES, 0, m_verticesSize);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr);
+    _check_gl_error(__FILE__,__LINE__);
+//    glDrawArraysInstanced(GL_TRIANGLES, 0, m_verticesSize);
 //    glDrawArrays(GL_LINES, 0, m_verticesSize);
 
     glDisable(GL_CULL_FACE);
 
-    m_program.release();
+    m_idxBuffer.unbind();
     m_vao.unbind();
+    m_program.release();
+
 
 }
 

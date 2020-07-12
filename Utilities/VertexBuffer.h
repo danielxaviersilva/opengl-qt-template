@@ -16,6 +16,7 @@ public:
     VertexBuffer(const void * data, int size);
     ~VertexBuffer();
 
+    void genBuffer();
     void bind();
     void unbind();
     void updateBufferData(const void *data, int size);

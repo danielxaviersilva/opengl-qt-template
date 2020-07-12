@@ -8,10 +8,11 @@
 #include <glm/gtc/type_ptr.hpp>
 //#include <OpenGL.h>
 #include <QGLFunctions>
-#include "../Utilities/vertexarray.h"
-#include "../Utilities/vertexbuffer.h"
-#include "../Utilities/shader.h"
-#include "../Utilities/cgutilities.h"
+#include "../Utilities/VertexArray.h"
+#include "../Utilities/VertexBuffer.h"
+#include "../Utilities/IndexBuffer.h"
+#include "../Utilities/Shader.h"
+#include "../Utilities/CGUtilities.h"
 
 //describes sphere that each coordinate is in vec4 form (x,y,z alfa=1).
 
@@ -35,11 +36,10 @@ class Sphere : protected CGUtilities
 
     } sphereAttributes;
 
-    std::vector <sphereAttributes> m_sphereAttributes;
-
     VertexBuffer m_vbo;
     VertexArray m_vao;
-    shader m_program;
+    IndexBuffer m_idxBuffer;
+    Shader m_program;
 
     float m_verticesSize;
 

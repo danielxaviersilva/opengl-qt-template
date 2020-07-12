@@ -2,75 +2,54 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-Cilinder::Cilinder(int thetaRes, int heightRes, float R, float height, glm::vec3 center, glm::vec3 mainAxis)
-{
-    m_thetaRes   = thetaRes;
-    m_heightRes = heightRes;
-    m_height     = height;
-    m_radius       = R;
-    m_center      = center;
-    m_mainAxis = mainAxis;
-
-}
+Cilinder::Cilinder(int thetaRes, int heightRes, float R, float height, glm::vec3 center, glm::vec3 mainAxis):
+m_thetaRes(thetaRes), m_heightRes(heightRes), m_height(height), m_radius(R), m_center(center), m_mainAxis(mainAxis)
+{}
 
 void Cilinder::initialize()
 {
     if(!m_initialized)
     {
-
         m_initialized = true;
-
 //        Carregar o shader
         m_program.loadProgram("./renderLightning.vert","./renderLightning.frag");
         m_program.useProgram();
 
         int locVertex =glGetAttribLocation(m_program.getProgramID(),"vertex");
         int locNormal = glGetAttribLocation(m_program.getProgramID(),"v_normal");
-
         if(locVertex == -1 || locNormal == -1)
-        {
             std::cerr << "Cilinder::initialize: At least one of the input names couldn't be found" << std::endl;
-        }
 
         m_vao.bind();
-
         m_vao.push<float>(locVertex, 4);
         m_vao.push<float>(locNormal, 4);
 //        m_vao.push<float>(-1, 2); //Reserved for texture, which is not being used
-
         //Calculate the vertices and assign to buffer m_vbo
         setCilinderSurface();
-
         m_vao.addBuffer(m_vbo);
 
+
         setLighting();
-
-        //create vertices of a Cilinder centered at the origin
-//        superquadric_coord = new SuperquadricCoord(position_loc, new GLfloat[4]{1.f, 0, 0, 0}, 5, 5);
-
-
         m_vao.unbind();
         m_program.release();
-
     }
-
 }
 
 void Cilinder::setCilinderSurface()
 {
-    float * heightGrid;
+    std::vector<cilinderAttributes> cilinderAttrib;
     float * thetaGrid;
-
-    heightGrid = new float[m_heightRes];
-    thetaGrid = new float [m_thetaRes];
-
     float ** X;
     float ** Y;
     float ** Z;
 
+    thetaGrid = new float [m_thetaRes];
     X = new float* [m_heightRes];
     Y = new float *[m_heightRes];
     Z = new float *[m_heightRes];
+
+    for (int i = 0; i < m_thetaRes; i++)
+        thetaGrid[i] = 2*(M_PI)*i/(m_thetaRes);
 
     for (int count = 0; count < m_heightRes; count++)
     {
@@ -79,95 +58,72 @@ void Cilinder::setCilinderSurface()
         Z[count] = new float [m_thetaRes];
     }
 
-    for (int i = 0; i < m_thetaRes; i++)
-        thetaGrid[i] = 2*(M_PI)*i/(m_thetaRes - 1);
-
-    for (int i = 0; i < m_heightRes; i++)
-        heightGrid[i] = -m_height/2 + m_height*i/(m_heightRes - 1);
-
+    //Grids: theta: [0, 2pi), Height: [-h/2, h/2]
     for (int i = 0; i< m_heightRes; i++)
-    {
         for (int j = 0; j< m_thetaRes; j++)
         {
-            X[i][j] = m_radius*(cos(thetaGrid[j]));
-            Y[i][j] = heightGrid[i];
-            Z[i][j] = m_radius*(sin(thetaGrid[j]));
+            X[i][j] = m_radius*(cos(2*(M_PI)*j/(m_thetaRes)));
+            Y[i][j] = -m_height/2 + m_height*i/(m_heightRes - 1);
+            Z[i][j] = m_radius*(sin(2*(M_PI)*j/(m_thetaRes)));
         }
-    }
 
     glm::mat4 tMat = shiftYtoAxisMatrix(m_mainAxis);
     tMat = glm::translate(tMat, m_center);
     glm::mat4 tMatNormal = glm::transpose(glm::inverse(tMat));
 
-    for (int i = 0; i < m_heightRes-1; i++)
-       {
-           for(int j = 0; j<m_thetaRes -1; j++)
+    std::vector<unsigned int> idxSet;
+    idxSet.reserve(6*m_thetaRes*(m_heightRes - 1));
+    for (int i = 0; i < m_heightRes; i++)
+           for(int j = 0; j<m_thetaRes; j++)
            {
-               m_cilinderAttributes.push_back(cilinderAttributes(
+               cilinderAttrib.push_back(cilinderAttributes(
                tMat*glm::vec4(X[i][j], Y[i][j], Z[i][j], 1.0f), //vertex
                tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f))); //normals
 
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(X[i+1][j], Y[i+1][j], Z[i+1][j], 1.0f),
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j], Y[i+1][j], Z[i+1][j])), 0.0f)));
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1], 1.0f), //vertex
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
-
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(X[i][j] + m_center[0], Y[i][j] + m_center[1], Z[i][j] + m_center[2], 1.0f), //vertex
-              tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j], Y[i][j], Z[i][j])), 0.0f)));
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(X[i+1][j+1] + m_center[0], Y[i+1][j+1] + m_center[1], Z[i+1][j+1] + m_center[2], 1.0f), //vertex
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i+1][j+1], Y[i+1][j+1], Z[i+1][j+1])), 0.0f)));
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(X[i][j+1] + m_center[0], Y[i][j+1] + m_center[1], Z[i][j+1] + m_center[2], 1.0f), //vertex
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(X[i][j+1], Y[i][j+1], Z[i][j+1])), 0.0f)));
-
+               if (i < m_heightRes -1) {
+                     idxSet.emplace_back(i*m_thetaRes + j                   );
+                     idxSet.emplace_back((i+1)*m_thetaRes + j               );
+                     idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
+                     idxSet.emplace_back(i*m_thetaRes + j                   );
+                     idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
+                     idxSet.emplace_back(i*m_thetaRes + (j+1)%m_thetaRes    );
+               }
            }
-        }
+        m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
+        m_idxBuffer.unbind();
+        //Circle Upper part
+        cilinderAttrib.push_back(cilinderAttributes(
+        tMat*glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
+        tMat*glm::vec4(0.0f, 1.0f, 0.0f , 0.0f)));
 
-       for (int i = 0; i < m_thetaRes-1; i++)
-        {
-           m_cilinderAttributes.push_back(cilinderAttributes(
-           tMat*glm::vec4(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
-           tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
+        for (int i = m_thetaRes; i >= 0 ; i--)
+           cilinderAttrib.push_back(cilinderAttributes(
+           tMat*glm::vec4(m_radius*cos(thetaGrid[i%m_thetaRes]), m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]), 1.0f),
+           tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i%m_thetaRes]), m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]))) , 0.0f)));
 
-           m_cilinderAttributes.push_back(cilinderAttributes(
-           tMat*glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
-           tMat*glm::vec4(0.0f, 1.0f, 0.0f , 0.0f)));
+       //Circle bottom part
 
-           m_cilinderAttributes.push_back(cilinderAttributes(
-           tMat*glm::vec4(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
-           tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
+           cilinderAttrib.push_back(cilinderAttributes(
+           tMat*glm::vec4(0.0f, -m_height/2, 0.0f, 1.0f),
+           tMat*glm::vec4(0.0f, -1.0f, 0.0f , 0.0f)));
 
-           }
+           for (int i = 0; i <= m_thetaRes; i++)
+               cilinderAttrib.push_back(cilinderAttributes(
+               tMat*glm::vec4(m_radius*cos(thetaGrid[i%m_thetaRes]), -m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]), 1.0f),
+               tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i%m_thetaRes]), -m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]))) , 0.0f)));
 
-           for (int i = 0; i < m_thetaRes-1; i++)
+           for (int count = 0; count < m_heightRes; count++)
            {
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]), 1.0f),
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i+1]), -m_height/2, m_radius*sin(thetaGrid[i+1]))) , 0.0f)));
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(0.0f, -m_height/2, 0.0f, 1.0f),
-               tMat*glm::vec4(0.0f, -1.0f, 0.0f , 0.0f)));
-
-               m_cilinderAttributes.push_back(cilinderAttributes(
-               tMat*glm::vec4(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]), 1.0f),
-               tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i]), -m_height/2, m_radius*sin(thetaGrid[i]))) , 0.0f)));
-
+               delete [] X[count];
+               delete [] Y[count];
+               delete [] Z[count];
            }
-
-
-        m_verticesSize = m_cilinderAttributes.size();
-        m_vbo.updateBufferData(m_cilinderAttributes.data(), m_cilinderAttributes.size()*sizeof(cilinderAttributes));
+           delete[] X;
+           delete[] Y;
+           delete[] Z;
+           delete [] thetaGrid;
+        m_vbo.updateBufferData(cilinderAttrib.data(), cilinderAttrib.size()*sizeof(cilinderAttributes));
         _check_gl_error(__FILE__,__LINE__);
-
 }
 
 void Cilinder::setProjectionMatrix(glm::mat4 projectionMatrix)
@@ -194,23 +150,30 @@ void Cilinder::setMVMatrix(glm::mat4 mvMatrix)
 
 void Cilinder::render()
 {
-    if (!m_initialized)
-    {
+    if (!m_initialized) {
         std::cerr << "Cilinder.render(): not rendering because not initialized yet. Use method initialize()" << std::endl;
         return;
     }
     m_program.useProgram();
     m_vao.bind();
+    m_idxBuffer.bind();
 
     glEnable(GL_CULL_FACE);
 
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawArrays(GL_TRIANGLES, 0, m_verticesSize);
+//    glDrawArrays(GL_TRIANGLES, 0, m_verticesSize);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_TRIANGLES, 6*m_thetaRes*(m_heightRes-1),  GL_UNSIGNED_INT, nullptr); //draw side
+    _check_gl_error(__FILE__,__LINE__);
+    m_idxBuffer.unbind();
+
+    glDrawArrays(GL_TRIANGLE_FAN, m_thetaRes*m_heightRes, m_thetaRes+2 ); //draw upper part
+    glDrawArrays(GL_TRIANGLE_FAN, m_thetaRes*m_heightRes+ m_thetaRes+2, m_thetaRes+2); //draw bottom parte
     glDisable(GL_CULL_FACE);
 
+    m_idxBuffer.unbind();
     m_program.release();
     m_vao.unbind();
-
 }
 
 void Cilinder::setLighting()
@@ -235,7 +198,7 @@ void Cilinder::setLighting()
     //ref to category of how models are computed. 0,1 or 2.
     float shading_model       = 2.0f;
     //Light source Parameters
-    glm::vec4 light_location      = glm::vec4(-1.0f,1.0,.0,1.0);
+    glm::vec4 light_location      = glm::vec4(-1.0f,0.0,0.0,1.0);
     glm::vec4 spot_direction      = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);
     float     spot_exponent       = 25.0f;
     float     spot_cutoff         = 180.0f;
@@ -247,7 +210,7 @@ void Cilinder::setLighting()
     glm::vec4 Mat_diffuseColor    = glm::vec4(1.0f, .0f, 0.0f, 1.0f);
     glm::vec4 Mat_specularColor   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     float     shineness           = 5.0f;
-    glm::vec4 expectator_position = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+    glm::vec4 expectator_position = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
     m_program.useProgram();
 

@@ -15,46 +15,68 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        Additionals/SphericalODF.cpp \
+        LightSource.cpp \
+        Primitives/SphereSet.cpp \
         Primitives/cilinder.cpp \
         Primitives/cube.cpp \
         Primitives/sphere.cpp \
-        Utilities/camera.cpp \
-        Utilities/cgutilities.cpp \
-        Utilities/indexbuffer.cpp \
-        Utilities/shader.cpp \
-        Utilities/vertexarray.cpp \
-        Utilities/vertexbuffer.cpp \
-        lightsource.cpp \
+        Utilities/CGUtilities.cpp \
+        Utilities/Camera.cpp \
+        Utilities/IndexBuffer.cpp \
+        Utilities/Shader.cpp \
+        Utilities/Texture.cpp \
+        Utilities/VertexArray.cpp \
+        Utilities/VertexBuffer.cpp \
         main.cpp \
         window.cpp
 
 
+
+
+
 INCLUDEPATH += "/usr/local/Cellar/glm/0.9.9.5/include" \
                 "/usr/local/Cellar/glew/2.1.0_1/include/"
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    Additionals/SphericalODF.h \
+    LightSource.h \
+    Primitives/SphereSet.h \
     Primitives/cilinder.h \
     Primitives/cube.h \
     Primitives/sphere.h \
-    Utilities/camera.h \
-    Utilities/cgutilities.h \
-    Utilities/indexbuffer.h \
-    Utilities/shader.h \
-    Utilities/vertexarray.h \
-    Utilities/vertexbuffer.h \
-    lightsource.h \
+    QBallGlyphsCoefficientsSample.h \
+    Utilities/CGUtilities.h \
+    Utilities/Camera.h \
+    Utilities/IndexBuffer.h \
+    Utilities/Shader.h \
+    Utilities/Texture.h \
+    Utilities/VertexArray.h \
+    Utilities/VertexBuffer.h \
+    Utilities/renderCrossLine.h \
     openGLAdditionals.h \
     window.h
 
 DISTFILES += \
+    Isa.png \
+    Mariana.png \
     hello.frag \
     hello.vert \
+    mickey.jpg \
+    renderInstances.frag \
+    renderInstances.vert \
     renderLightning.frag \
     renderLightning.vert \
+    renderQBallGlyphs.frag \
+    renderQBallGlyphs.vert \
     shader.frag \
     shader.vert \
+
+
+QT_CONFIG -= no-pkg-config
+CONFIG += link_pkgconfig
+PKGCONFIG += opencv4

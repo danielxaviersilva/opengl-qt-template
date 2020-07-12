@@ -9,11 +9,11 @@
 //#include <OpenGL.h>
 #include <QGLFunctions>
 
-#include "../Utilities/indexbuffer.h"
-#include "../Utilities/vertexarray.h"
-#include "../Utilities/vertexbuffer.h"
-#include "../Utilities/shader.h"
-#include "../Utilities/cgutilities.h"
+#include "../Utilities/IndexBuffer.h"
+#include "../Utilities/VertexArray.h"
+#include "../Utilities/VertexBuffer.h"
+#include "../Utilities/Shader.h"
+#include "../Utilities/CGUtilities.h"
 
 
 
@@ -46,13 +46,11 @@ class Cube : protected CGUtilities
     VertexBuffer m_vbo;
     VertexArray m_vao;
     IndexBuffer m_idxBuffer;
-    shader m_program;
+    Shader m_program;
 
     float m_verticesSize;
 
 public:
-   // sphere();
-//    Sphere(int theta = 30, int phi = 30, float r = 0.5, float xc = 0, float yc = 0, float zc = 0);
     Cube(float edge = 0.25, glm::vec3 center = glm::vec3(0.0f), glm::vec3 rotationAxis = glm::vec3(0.0f,1.0f,0.0f));
 
     void initialize();

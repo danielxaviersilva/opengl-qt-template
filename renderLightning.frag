@@ -100,7 +100,7 @@ void main (void)
 	{
 		fColor = flat_color;
 	}
-//        fColor = vec4(1.0,0.0,0.0,1.0);
+       fColor = vec4(1.0,1.0,1.0,1.0);
 
 
 }
