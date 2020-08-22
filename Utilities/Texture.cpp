@@ -43,6 +43,12 @@ void Texture::uploadTexture(std::vector<float> data, int width, int height)
 
 }
 
+void Texture::deleteTexture()
+{
+ glDeleteTextures(1, &m_rendererID);
+ m_initialized = false;
+}
+
 
 void Texture::uploadTexture(const std::string &path)
 {

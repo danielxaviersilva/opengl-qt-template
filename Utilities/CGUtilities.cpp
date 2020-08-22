@@ -53,3 +53,38 @@ glm::mat4 CGUtilities::shiftZtoAxisMatrix(glm::vec3 axis)
     return tMat;
 }
 
+void CGUtilities::shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int> &index, bool verbose)
+{
+    std::vector<int> indexChanges;
+    indexChanges.resize(V.size());
+
+    for (unsigned int i = 0; i < V.size(); i++)
+        indexChanges[i] = i;
+
+    if(verbose)
+        std::cout << "Arg Vector Size: "<< V.size() << " -> ";
+    int vSize = V.size();
+    int idxFix = 0;
+
+    for (int i = 0; i < vSize -1;i++)
+        for (int j = i+1; j < vSize; j++)
+            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) == 1.0f)
+                indexChanges[j] = i;
+
+    for (int i = 0; i < vSize -1;i++)
+        for (int j = i+1; j < vSize; j++)
+            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) == 1.0f){
+                V.erase(V.begin() + j);
+                for (auto & id: indexChanges)//unsigned int k = 0; k < indexChanges.size(); k++)
+                    if (id > j)
+                        id--;
+                j--;
+                vSize--;
+            }
+
+    for (unsigned int i = 0; i < index.size(); i++)
+        index[i] = indexChanges[index[i]];
+
+    if (verbose)
+        std::cout << V.size() << std::endl;
+}

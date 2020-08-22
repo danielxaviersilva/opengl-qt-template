@@ -57,7 +57,7 @@ flat out vec4 o_flatColor;
 out LightSource o_transformedLightSource;
 
 out MaterialLighting o_glyphVertexColor;
-out vec3 o_positionColorMap;
+flat out vec4 o_positionColorMap;
 
 void setLighting(in float shadingModel, in LightSource source, in MaterialLighting material, 
 				 in vec3 specularExpectator, in vec3 normal, in vec3 vertice,
@@ -66,7 +66,8 @@ void setLighting(in float shadingModel, in LightSource source, in MaterialLighti
 
 void main(void) 
 {
-	vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), gl_InstanceID/(u_instanceCount-1));
+	//vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), gl_InstanceID/(u_instanceCount-1));
+	vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), (gl_InstanceID+0.5)/(u_instanceCount));
 	float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
 
 
@@ -74,7 +75,7 @@ void main(void)
 	o_glyphVertexColor.ambient  = 0.3*vec3(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z));
 	o_glyphVertexColor.diffuse  = 0.5*vec3(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z));
 	o_glyphVertexColor.specular = 1.0*vec3(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z));
-	o_positionColorMap = vec3(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z));
+	o_positionColorMap = vec4(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z), 1.0);
 
 
 	

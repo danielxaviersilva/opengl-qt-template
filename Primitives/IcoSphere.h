@@ -1,5 +1,6 @@
-#ifndef SPHERE_SET_H
-#define SPHERE_SET_H
+#ifndef ICOSPHERE_H
+#define ICOSPHERE_H
+
 
 #include <iostream>
 #include <vector>
@@ -18,7 +19,8 @@
 //describes sphere that each coordinate is in vec4 form (x,y,z alfa=1).
 
 
-class SphereSet : protected CGUtilities
+
+class IcoSphere : public CGUtilities
 {
 
 
@@ -52,8 +54,8 @@ class SphereSet : protected CGUtilities
     glm::vec4 m_materialAmbientColor, m_materialDiffuseColor, m_materialSpecularColor;
     float     m_shineness;
 
-    int m_thetaRes;
-    int m_phiRes;
+    int m_vertexAmountThreshold;
+
 
     bool m_initialized;
     bool m_attributesFlag;
@@ -61,7 +63,7 @@ class SphereSet : protected CGUtilities
 
 
 public:
-    SphereSet(int theta = 30, int phi = 30);
+    IcoSphere(int vertexAmount = 1000);
     void addSphere(float r = 0.5, glm::vec3 center = glm::vec3(0.0f), glm::vec3 axis = glm::vec3(0.0f, 1.0f, 0.0f));
     void initialize(LightSource* lightSource = new LightSource);
 
@@ -90,6 +92,9 @@ protected:
     void shrinkVecBaseAttributes(std::vector<baseSphereAttributes> &V, std::vector<int> &index, bool verbose);
 private:
     void setVaoLayout();
+    std::vector<float> computeIcosahedronVertices();
+    std::vector<baseSphereAttributes> vertexListToVertexNormalAttributes(const std::vector<glm::vec3> vertex);
+public:
 };
 
-#endif // SPHERE_SET_H
+#endif // ICOSPHERE_H

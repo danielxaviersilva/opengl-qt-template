@@ -17,6 +17,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         Additionals/SphericalODF.cpp \
         LightSource.cpp \
+        Primitives/BSPLine.cpp \
+        Primitives/BicubicBezierSurface.cpp \
+        Primitives/HermiteSweep.cpp \
+        Primitives/IcoSphere.cpp \
+        Primitives/RevolutionHermite.cpp \
         Primitives/SphereSet.cpp \
         Primitives/cilinder.cpp \
         Primitives/cube.cpp \
@@ -45,6 +50,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     Additionals/SphericalODF.h \
     LightSource.h \
+    Primitives/BSPLine.h \
+    Primitives/BicubicBezierSurface.h \
+    Primitives/HermiteSweep.h \
+    Primitives/IcoSphere.h \
+    Primitives/RevolutionHermite.h \
     Primitives/SphereSet.h \
     Primitives/cilinder.h \
     Primitives/cube.h \
@@ -64,6 +74,8 @@ HEADERS += \
 DISTFILES += \
     Isa.png \
     Mariana.png \
+    SolidObjectDrawer.frag \
+    SolidObjectDrawer.vert \
     hello.frag \
     hello.vert \
     mickey.jpg \

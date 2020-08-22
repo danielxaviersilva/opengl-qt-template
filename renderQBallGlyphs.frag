@@ -41,7 +41,7 @@ void setLighting(in float shadingModel, in LightSource source, in MaterialLighti
 	out vec4 resultColor);
 
 out vec4 fragColor;
-in vec3 o_positionColorMap;
+flat in vec4 o_positionColorMap;
 
 void main (void) 
 {
@@ -50,7 +50,7 @@ void main (void)
 	o_gouraudColor, o_flatColor,
 	fragColor);*/
 
-	fragColor = vec4(o_positionColorMap, 1.0);
+	fragColor = o_positionColorMap;
 }
 
 

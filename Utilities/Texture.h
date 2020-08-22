@@ -37,6 +37,7 @@ public:
     int getHeight() const;
     Texture(std::vector<float> data, int width, int height);
     void uploadTexture(std::vector<float> data, int width, int height);
+    void deleteTexture();
 };
 
 #endif // TEXTURE_H

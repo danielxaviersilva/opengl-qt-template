@@ -58,6 +58,8 @@ class SphereODF : protected CGUtilities
     int m_thetaRes;
     int m_phiRes;
 
+    int m_meshPointsAmount;
+
     int m_InstancesCount;
 
     bool m_initialized;
@@ -99,6 +101,7 @@ public:
 private:
     void setVaoLayout();
     void setSphereSurface();
+    void updateODFMapTexture();
 
 };
 

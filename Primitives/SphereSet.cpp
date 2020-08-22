@@ -1,5 +1,80 @@
 #include "SphereSet.h"
 
+void shrinkVec3(std::vector<glm::vec3> &V, std::vector<int> &index, bool verbose)
+{
+    std::vector<int> indexChanges;
+    indexChanges.resize(V.size());
+
+    for (unsigned int i = 0; i < V.size(); i++)
+        indexChanges[i] = i;
+
+    if(verbose)
+        std::cout << "Arg Vector Size: "<< V.size() << " -> ";
+    int vSize = V.size();
+    for (int i = 0; i < vSize -1;i++)
+    {
+        for (int j = i+1; j < vSize; j++)
+        {
+            if (glm::dot(V[i], V[j]) == 1.0f){
+                V.erase(V.begin() + j);
+                j--;
+                vSize--;
+
+                indexChanges[j] = i;
+                for (int k = j+1; k < vSize; k++)
+                    indexChanges[k]--;
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < index.size(); i++)
+    {
+        index[i] = indexChanges[index[i]];
+    }
+
+    if (verbose)
+        std::cout << V.size() << std::endl;
+}
+
+void SphereSet::shrinkVecBaseAttributes(std::vector<baseSphereAttributes> &V, std::vector<unsigned int> &index, bool verbose)
+{
+    std::vector<int> indexChanges;
+    indexChanges.resize(V.size());
+
+    for (unsigned int i = 0; i < V.size(); i++)
+        indexChanges[i] = i;
+
+    if(verbose)
+        std::cout << "Arg Vector Size: "<< V.size() << " -> ";
+    int vSize = V.size();
+    int idxFix = 0;
+    for (int i = 0; i < vSize -1;i++)
+    {
+        int currentIdx = i+ 1+ idxFix;
+        for (int j = i+1; j < vSize; j++, currentIdx++)
+        {
+            if (glm::dot(glm::vec3(V[i].vertex), glm::vec3(V[j].vertex)) == 1.0f){
+                V.erase(V.begin() + j);
+                indexChanges[currentIdx] = indexChanges[i+idxFix];
+                for (unsigned int k = currentIdx+1; k < indexChanges.size(); k++)
+                    indexChanges[k]--;
+                j--;
+                vSize--;
+                idxFix++;
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < index.size(); i++)
+    {
+        index[i] = indexChanges[index[i]];
+    }
+
+    if (verbose)
+        std::cout << V.size() << std::endl;
+}
+
+
 SphereSet::SphereSet(int theta, int phi):
     m_thetaRes(theta),m_phiRes(phi), m_initialized(false), m_attributesFlag(false)
 {
@@ -72,7 +147,7 @@ void SphereSet::render()
     m_idxBuffer.bind();
 
     glEnable(GL_CULL_FACE);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, int(m_sphereAttributes.size()));
     _check_gl_error(__FILE__,__LINE__);
 
@@ -152,14 +227,14 @@ void SphereSet::setSphereSurface()
     //The only repetition of elements on buffer are when phi = ±pi/2
     for (int i = 0; i < m_phiRes; i++)
     {
-        float m_phi =  M_PI/2 - M_PI*i/(m_phiRes - 1);
+        float phi =  M_PI/2 - M_PI*i/(m_phiRes - 1);
         for(int j = 0; j<m_thetaRes; j++)
         {
-             float m_theta = 2*(M_PI)*j/(m_thetaRes);
+             float theta = 2*(M_PI)*j/(m_thetaRes);
 
              sphereAttributesBuffer.emplace_back(baseSphereAttributes(
-             glm::vec4(cos(m_phi)*cos(m_theta), sin(m_phi), cos(m_phi)*sin(m_theta), 1.0f), //vertex
-             glm::vec4(cos(m_phi)*cos(m_theta), sin(m_phi), cos(m_phi)*sin(m_theta), 0.0f))); //normals
+             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 1.0f), //vertex
+             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 0.0f))); //normals
               if (i < m_phiRes -1)
               {
                     idxSet.emplace_back(i*m_thetaRes + j                   );
@@ -171,6 +246,9 @@ void SphereSet::setSphereSurface()
               }
         }
      }
+
+    shrinkVecBaseAttributes(sphereAttributesBuffer, idxSet, true);
+
      m_verticesSize = idxSet.size();
      m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(baseSphereAttributes));
      _check_gl_error(__FILE__,__LINE__);
@@ -221,6 +299,10 @@ void SphereSet::setVaoLayout()
     _check_gl_error(__FILE__,__LINE__);
 
 }
+
+
+
+
 //void SphereSet::setTextureCoords()
 //{
 //    float direction[3];

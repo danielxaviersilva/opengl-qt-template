@@ -16,10 +16,10 @@ void SphereODF::addGlyph(const std::vector<float> &ODFList, glm::vec3 center, gl
         return;
     }
 
-    std::cout << "Size ODF: "<< ODFList.size() << " Size do domínio da esfera: " << m_thetaRes*m_phiRes << std::endl;
+    std::cout << "Size ODF: "<< ODFList.size() << " Size do domínio da esfera: " << m_meshPointsAmount << std::endl;
     int currentIdx = 0;
 
-    for (int i = 0; i < m_thetaRes*m_phiRes; i++)
+    for (int i = 0; i < m_meshPointsAmount; i++)
         m_ODFMap.push_back((scale*ODFList[currentIdx++]));
 
 
@@ -36,11 +36,12 @@ void SphereODF::addGlyph(const std::vector<float> &ODFList, glm::vec3 center, gl
 
 
     m_program.useProgram();
-    m_ODFMapTexture.uploadTexture(m_ODFMap, m_thetaRes*m_phiRes, m_InstancesCount);
+    m_ODFMapTexture.uploadTexture(m_ODFMap, m_meshPointsAmount, m_InstancesCount);
     int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
     glUniform1f(instanceCountLoc , float(m_InstancesCount));
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
+    m_ODFMapTexture.Unbind();
 
 }
 
@@ -51,21 +52,23 @@ void SphereODF::addThreeAngleGlyph(const std::vector<float> &ODFList, float scal
         return;
     }
 
-    std::cout << "Size ODF: "<< ODFList.size() << " Size do domínio da esfera: " << m_thetaRes*m_phiRes << std::endl;
-    int currentIdx = 0;
-
-    for (int i = 0; i < m_thetaRes*m_phiRes; i++)
+    std::cout << "Size ODF: "<< ODFList.size() << " Size do domínio da esfera: " << m_meshPointsAmount << std::endl;
+    int currentIdx;
+    currentIdx = 0;
+    for (int i = 0; i < m_meshPointsAmount; i++)
         m_ODFMap.push_back((scale*ODFList[currentIdx++]));
-    for (int i = 0; i < m_thetaRes*m_phiRes; i++)
+    currentIdx = 0;
+    for (int i = 0; i < m_meshPointsAmount; i++)
         m_ODFMap.push_back((scale*ODFList[currentIdx++]));
-    for (int i = 0; i < m_thetaRes*m_phiRes; i++)
+    currentIdx = 0;
+    for (int i = 0; i < m_meshPointsAmount; i++)
         m_ODFMap.push_back((scale*ODFList[currentIdx++]));
 
 
 
-    m_instancedSphereAttributes.push_back({glm::vec3( 0.5f,  0.5, 0.0f), shiftYtoAxisMatrix(glm::vec3(1.0f,0.0f,0.0f))});
+    m_instancedSphereAttributes.push_back({glm::vec3( 0.5f,  0.5, 0.0f), shiftYtoAxisMatrix(glm::vec3(0.0f,0.0f,1.0f))});
     m_instancedSphereAttributes.push_back({glm::vec3( -0.5f,  -0.5, 0.0f), shiftYtoAxisMatrix(glm::vec3(0.0f,1.0f,0.0f))});
-    m_instancedSphereAttributes.push_back({glm::vec3( 0.5f,  -0.5, 0.0f), shiftYtoAxisMatrix(glm::vec3(1.0f,0.0f,1.0f))});
+    m_instancedSphereAttributes.push_back({glm::vec3( 0.5f,  -0.5, 0.0f), shiftYtoAxisMatrix(glm::vec3(1.0f,0.0f,0.0f))});
 
 
     if (!m_attributesFlag)
@@ -77,12 +80,12 @@ void SphereODF::addThreeAngleGlyph(const std::vector<float> &ODFList, float scal
     _check_gl_error(__FILE__,__LINE__);
 
 
-    m_program.useProgram();
-    m_ODFMapTexture.uploadTexture(m_ODFMap, m_thetaRes*m_phiRes, m_InstancesCount);
-    int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
-    glUniform1f(instanceCountLoc , float(m_InstancesCount));
-    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
-    m_ODFMapTexture.Bind(m_slot);
+//    m_program.useProgram();
+//    m_ODFMapTexture.uploadTexture(m_ODFMap, m_thetaRes*m_phiRes, m_InstancesCount);
+//    int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
+//    glUniform1f(instanceCountLoc , float(m_InstancesCount));
+//    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
+//    m_ODFMapTexture.Bind(m_slot);
 
 
 }
@@ -104,7 +107,7 @@ void SphereODF::initialize(LightSource *lightSource)
         setSphereSurface(); //this method assign the m_SphereVBO buffer with a unitary sphere
 
         int glyphResolutionloc = m_program.getUniformLocation("u_glyphResolution");
-        glUniform1f(glyphResolutionloc,m_thetaRes*m_phiRes);
+        glUniform1f(glyphResolutionloc,m_meshPointsAmount);
 
         setProjectionMatrix(glm::mat4(1.0f));
         setMVMatrix(glm::mat4(1.0f));
@@ -147,7 +150,8 @@ void SphereODF::setLightSource(LightSource *lightSource)
 
 void SphereODF::setSphereSurface()
 {
-    std::vector <baseSphereAttributes> sphereAttributesBuffer;
+//    std::vector <baseSphereAttributes> sphereAttributesBuffer;
+    std::vector <glm::vec3> sphereAttributesBuffer;
 
     std::vector<unsigned int> idxSet;
     idxSet.reserve(6*m_thetaRes*(m_phiRes-1));
@@ -160,14 +164,17 @@ void SphereODF::setSphereSurface()
 
     for (int i = 0; i < m_phiRes; i++)
     {
-        float m_phi =  M_PI/2 - M_PI*i/(m_phiRes - 1);
+        float phi =  M_PI/2 - M_PI*i/(m_phiRes - 1);
         for(int j = 0; j<m_thetaRes; j++)
         {
-             float m_theta = 2*(M_PI)*j/(m_thetaRes);
+             float theta = 2*(M_PI)*j/(m_thetaRes);
 
-             sphereAttributesBuffer.emplace_back(baseSphereAttributes(
-             glm::vec4(cos(m_phi)*cos(m_theta), sin(m_phi), cos(m_phi)*sin(m_theta), 1.0f), //vertex
-             glm::vec4(cos(m_phi)*cos(m_theta), sin(m_phi), cos(m_phi)*sin(m_theta), 0.0f))); //normals
+//             sphereAttributesBuffer.emplace_back(baseSphereAttributes(
+//             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 1.0f), //vertex
+//             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 0.0f))); //normals
+
+             sphereAttributesBuffer.emplace_back(glm::vec3
+             (cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta))); //normals
 
               if (i < m_phiRes -1)
               {
@@ -181,14 +188,28 @@ void SphereODF::setSphereSurface()
         }
      }
 
+        shrinkVec3(sphereAttributesBuffer, idxSet, true);
+        m_meshPointsAmount = sphereAttributesBuffer.size();
+
         m_verticesSize = idxSet.size();//sphereAttributesBuffer.size();
-        m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(baseSphereAttributes));
+//        m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(baseSphereAttributes));
+          m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(glm::vec3));
         _check_gl_error(__FILE__,__LINE__);
 
 
         m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
         m_idxBuffer.unbind();
         _check_gl_error(__FILE__,__LINE__);
+}
+
+void SphereODF::updateODFMapTexture()
+{
+    m_ODFMapTexture.uploadTexture(m_ODFMap, m_meshPointsAmount, m_InstancesCount);
+    int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
+    glUniform1f(instanceCountLoc , float(m_InstancesCount));
+    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
+    m_ODFMapTexture.Bind(m_slot);
+    m_ODFMapTexture.Unbind();
 }
 
 void SphereODF::setMaterialLighting(glm::vec4 materialAmbientColor, glm::vec4 materialDiffuseColor, glm::vec4 materialSpecularColor, float shineness)
@@ -229,8 +250,9 @@ void SphereODF::render()
     m_program.useProgram();
     m_vao.bind();
     m_idxBuffer.bind();
+    updateODFMapTexture();
 
-    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
+//    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
 
 //    glEnable(GL_CULL_FACE);
@@ -242,12 +264,14 @@ void SphereODF::render()
     _check_gl_error(__FILE__,__LINE__);
 
 //    glDisable(GL_DEPTH_TEST);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDisable(GL_CULL_FACE);
 
+    m_ODFMapTexture.deleteTexture();
     m_idxBuffer.unbind();
     m_vao.unbind();
     m_program.release();
+
 
 
 }
@@ -269,8 +293,8 @@ void SphereODF::setVaoLayout()
 
     m_vao.bind();
 
-    m_vao.push<float>(locVertex, 4);
-    m_vao.push<float>(locNormal, 4);
+    m_vao.push<float>(locVertex, 3);
+//    m_vao.push<float>(locNormal, 4);
 //    m_vao.push<float>(-1, 2); //Reserved for texture, which is not being used
     m_vao.addBuffer(m_SphereVBO);
     m_vao.clearLayout(); //Clearing to support other buffer, that has the Center/Radius instanced parameters.
