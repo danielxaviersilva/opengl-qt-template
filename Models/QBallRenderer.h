@@ -21,7 +21,7 @@
 class QBallRenderer: protected CGUtilities
 {
 
-
+protected:
     VertexBuffer m_SphereVBO;
     VertexBuffer m_SphereAttributesVBO;
 //    VertexBuffer m_SphereODFMapVBO;
@@ -29,16 +29,13 @@ class QBallRenderer: protected CGUtilities
     IndexBuffer m_idxBuffer;
     Shader m_program;
 
-    LightSource * m_lightSource;
+//    LightSource * m_lightSource;
 
     int m_verticesSize;
 
 
-    glm::vec4 m_materialAmbientColor, m_materialDiffuseColor, m_materialSpecularColor;
+//    glm::vec4 m_materialAmbientColor, m_materialDiffuseColor, m_materialSpecularColor;
     float     m_shineness;
-
-    int m_thetaRes;
-    int m_phiRes;
 
     int m_ODFsize;
 
@@ -59,8 +56,8 @@ public:
 //    void addSphere(float r = 0.5, glm::vec3 center = glm::vec3(0.0f));
 
 
-    void initialize(QBall* qBall);
-    void render();
+    virtual void initialize(QBall* qBall);
+    virtual void render();
 
 
 
@@ -70,12 +67,12 @@ public:
 
     void instantDrawGlyphs();
 
-private:
+protected:
     void setVaoLayout();
     void setSphereSurface();
-    void updateODFMapTexture();
+//    void updateODFMapTexture();
 
-    void setInstancedVertexAttribBuffer();
+    virtual void setInstancedVertexAttribBuffer();
 
 };
 

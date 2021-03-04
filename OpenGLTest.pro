@@ -26,6 +26,8 @@ SOURCES += \
         Additionals/SphericalODF.cpp \
         LightSource.cpp \
         Models/QBall.cpp \
+        Models/QBallEvenRenderer.cpp \
+        Models/QBallHemisphere.cpp \
         Models/QBallRenderer.cpp \
         Primitives/BSPLine.cpp \
         Primitives/BicubicBezierSurface.cpp \
@@ -67,6 +69,8 @@ HEADERS += \
     Additionals/SphericalODF.h \
     LightSource.h \
     Models/QBall.h \
+    Models/QBallEvenRenderer.h \
+    Models/QBallHemisphere.h \
     Models/QBallRenderer.h \
     Primitives/BSPLine.h \
     Primitives/BicubicBezierSurface.h \
@@ -94,6 +98,8 @@ HEADERS += \
 DISTFILES += \
     Isa.png \
     Mariana.png \
+    Models/renderQBallEvenGlyphs.frag \
+    Models/renderQBallEvenGlyphs.vert \
     Models/renderQBallGlyphs.frag \
     Models/renderQBallGlyphs.vert \
     SolidObjectDrawer.frag \
@@ -105,6 +111,8 @@ DISTFILES += \
     renderInstances.vert \
     renderLightning.frag \
     renderLightning.vert \
+    renderQBallEvenGlyphs.frag \
+    renderQBallEvenGlyphs.vert \
     renderQBallGlyphs.frag \
     renderQBallGlyphs.vert \
     shader.frag \

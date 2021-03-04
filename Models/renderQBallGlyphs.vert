@@ -68,8 +68,9 @@ void setLighting(in float shadingModel, in LightSource source, in MaterialLighti
 
 void main(void) 
 {
-	vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), (gl_InstanceID+0.5)/(u_instanceCount));
-	float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
+//        float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
+        float vertexODFMap = texelFetch(u_ODFMap, ivec2(gl_VertexID, gl_InstanceID), 0)[0];
+
 
 
         vec3 normalizedvertex = normalize(vec3(vertex));
@@ -79,7 +80,7 @@ void main(void)
         o_positionColorMap = vec4(abs(normalizedvertex.x), abs(normalizedvertex.y), abs(normalizedvertex.z), 1.0);
 
 
-	
+
 //	o_expectatorPosition = u_projectionMatrix*u_modelViewMatrix *u_expectatorPosition;
 
         vec4 instanceVertex = instance_displacement*vec4((vertexODFMap*u_scale*vertex).xyz, 1.0);
@@ -99,8 +100,8 @@ void main(void)
 //	setLighting(u_shadingModel, o_transformedLightSource, /*u_materialLighting*/o_glyphVertexColor,
 //				o_expectatorPosition.xyz, o_transformedNormal.xyz, fragPos.xyz,
 //				o_gouraudColor, o_flatColor);
-	
-	gl_Position = fragPos;
+
+        gl_Position = fragPos;
 }
 
 void setAmbientLight(in vec3 materialAmbientColor, in vec3 sourceAmbientColor, out vec3 resultAmbientColor);

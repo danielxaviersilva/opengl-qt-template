@@ -43,23 +43,11 @@ float QBall::getScale() const
     return m_scale;
 }
 
-//void QBall::setBaseDirections(const std::vector<glm::vec3> &baseDirections)
-//{
-//    m_baseDirections = baseDirections;
-//}
-
 QBall::QBall(int instancesAmount, int icoIterations, int thetaRes, int phiRes):
     m_instancesAmount(instancesAmount)
 {
 
     bool isIco = true;
-
-
-
-//    m_instancesAmount = 2*m_SHorder + 1;
-    int cols = (int) sqrt(m_instancesAmount) + 1;
-    m_translateMatrix = new glm::mat4[cols*cols];
-    m_ODF = new float*[m_instancesAmount];
 
       if(isIco) {
         generateIcoCoordsMeshSphere(icoIterations);
@@ -68,22 +56,32 @@ QBall::QBall(int instancesAmount, int icoIterations, int thetaRes, int phiRes):
       }
 
       shrinkVec3(m_baseDirections, m_indexBuffer, true);
-      AlignEvenMesh(m_baseDirections, m_indexBuffer);
-      m_ODFsize = m_baseDirections.size();
+      computeTranslationMatrices(m_instancesAmount);
+//      AlignEvenMesh(m_baseDirections, m_indexBuffer);
+}
 
-      for (auto &b : m_baseDirections) {
-          std::cout << glm::to_string(b) << std::endl;
-      }
+QBall::~QBall()
+{
+    for (int i = 0; i < m_instancesAmount; i++)
+        delete[] m_ODF[i];
+    delete[] m_ODF;
 
-    m_vertexRes = m_baseDirections.size();
+    delete [] m_GFA;
+    delete [] m_translateMatrix;
+}
+
+void QBall::computeODFs()
+{
+
+    m_ODF = new float*[m_instancesAmount];
     const std::vector<float>& currentODF = Psi679989;//Psi432324;
 //    double *SH_out = new double[m_SHorder];
 
 #pragma omp parallel for
     for (int idx = 0; idx < m_instancesAmount; idx++)
     {
-        float * psi = new float[m_vertexRes];
-        for (int i = 0; i < m_vertexRes; i++) {
+        float * psi = new float[m_baseDirections.size()];
+        for (size_t i = 0; i < m_baseDirections.size(); i++) {
 
 //            const double phi = asin(m_sphereAttributesBuffer[i].y);
 ////            if(isnan(phi)) {
@@ -106,10 +104,10 @@ QBall::QBall(int instancesAmount, int icoIterations, int thetaRes, int phiRes):
 //            psi[i] = abs(SH);
 
             psi[i] = 1.0f;//((float)rand()/(float)(RAND_MAX));
-            if (psi[i] < 0.7f) psi[i] = 0.7f;
-//            auto max = max_element(std::begin(currentODF), std::end(currentODF));
-//            auto min = min_element(std::begin(currentODF), std::end(currentODF));
-//            psi[i] = (currentODF[i]-*min)/(*max - *min);
+//            if (psi[i] < 0.7f) psi[i] = 0.7f;
+            auto max = max_element(std::begin(currentODF), std::end(currentODF));
+            auto min = min_element(std::begin(currentODF), std::end(currentODF));
+            psi[i] = (currentODF[i]-*min)/(*max - *min);
 //            psi[i] = (currentODF[i])/(*max);
 //            psi[i] = Psi679871[i];
 //            psi[i] = (std::min({fabs(m_sphereAttributesBuffer[i].x),
@@ -129,6 +127,12 @@ QBall::QBall(int instancesAmount, int icoIterations, int thetaRes, int phiRes):
 
 
 
+}
+
+void QBall::computeTranslationMatrices(const unsigned int& instancesAmount)
+{
+    int cols = (int) sqrt(instancesAmount) + 1;
+    m_translateMatrix = new glm::mat4[cols*cols];
     std::vector<float> borderMeshX;
     std::vector<float> borderMeshY;
     std::vector<glm::vec2> centerSet;
@@ -139,29 +143,16 @@ QBall::QBall(int instancesAmount, int icoIterations, int thetaRes, int phiRes):
     for(float j = 1; j >= -1.01; j-=2.f/float(cols))
         borderMeshY.push_back(j);
 
-
-
     int idx = 0;
     for(int j = 0; j < cols; j++)
         for(int i = 0; i < cols; i++){
             m_translateMatrix[idx++] = glm::translate(glm::mat4(1.0f),
                                                       glm::vec3(0.5f*(borderMeshX[i] + borderMeshX[i+1]),
                                                                 0.5f*(borderMeshY[j] + borderMeshY[j+1]), 0.0f));
-
-//        std::cout << idx-1 << ": " << glm::to_string(m_translateMatrix[idx-1]) << std::endl;
         }
 
     m_scale = 1.0f/((float)cols);
-}
 
-QBall::~QBall()
-{
-    for (int i = 0; i < m_instancesAmount; i++)
-        delete[] m_ODF[i];
-    delete[] m_ODF;
-
-    delete [] m_GFA;
-    delete [] m_translateMatrix;
 }
 
 float *QBall::getVoxelODF(int index)
@@ -237,20 +228,6 @@ void QBall::generateIcoCoordsMeshSphere(const unsigned int meshIterations)
                     const glm::vec3 v12 = glm::normalize(0.5f*(v1 + v2));
                     const glm::vec3 v20 = glm::normalize(0.5f*(v2 + v0));
 
-
-
-    //                std::cout << i << " Triangulo: " << std::endl;
-    //                std::cout << "Geradores: " << std::endl;
-    //                std::cout << glm::to_string(v0) << std::endl;
-    //                std::cout << glm::to_string(v1) << std::endl;
-    //                std::cout << glm::to_string(v2) << std::endl;
-    //                std::cout << std::endl;
-    //                std::cout << "Triangulos gerados: " << std::endl;
-    //                std::cout << glm::to_string(v01) << std::endl;
-    //                std::cout << glm::to_string(v12) << std::endl;
-    //                std::cout << glm::to_string(v20) << std::endl;
-
-
                     m_baseDirections.push_back(v01);
                     m_baseDirections.push_back(v12);
                     m_baseDirections.push_back(v20);
@@ -274,9 +251,6 @@ void QBall::generateIcoCoordsMeshSphere(const unsigned int meshIterations)
                     currentVertexIdx+=3;
                 }
                 m_indexBuffer = idxAux;
-                std::cout << "idxBufferSize/3 (#triangles): " << m_indexBuffer.size()/3 << std::endl;
-                std::cout << "vertexListSize: " << m_baseDirections.size() << std::endl << std::endl;
-
             }
 
     }

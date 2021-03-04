@@ -21,11 +21,11 @@ void QBallRenderer::initialize(QBall *qBall)
         setVaoLayout();
         setSphereSurface(); //this method assign the m_SphereVBO buffer with a unitary sphere
 
-        int glyphResolutionloc = m_program.getUniformLocation("u_glyphResolution");
-        int scaleLoc = m_program.getUniformLocation("u_scale");
+//        int glyphResolutionloc = m_program.getUniformLocation("u_glyphResolution");
         float scale = m_qBallRef->getScale();
-        std::cout << scale << std::endl;
-        glUniform1f(glyphResolutionloc, m_ODFsize);
+        int scaleLoc = m_program.getUniformLocation("u_scale");
+
+//        std::cout << scale << std::endl;
         glUniform1f(scaleLoc, scale);
 
         setProjectionMatrix(glm::mat4(1.0f));
@@ -62,12 +62,6 @@ void QBallRenderer::setSphereSurface()
     std::vector <glm::vec3> sphereAttributesBuffer = m_qBallRef->getBaseDirections();
     std::vector<unsigned int> idxSet = m_qBallRef->getIndexBuffer();
 
-    for (auto & x:sphereAttributesBuffer)
-        std::cout << glm::to_string(x) << std::endl;
-    for (auto & x:idxSet)
-        std::cout << x<< std::endl;
-
-//    shrinkVec3(sphereAttributesBuffer, idxSet, true);
     m_ODFsize = sphereAttributesBuffer.size();
     m_verticesSize = idxSet.size();
     m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(glm::vec3));
@@ -98,15 +92,13 @@ void QBallRenderer::setInstancedVertexAttribBuffer()
         float* currentVoxelAttributes = m_qBallRef->getVoxelODF(i);
         int currentODFIndex = 0;
         for(int j = 0; j< m_ODFsize;j++) {
-           currentODFListSet[i*m_ODFsize + j] = .7f;//(currentVoxelAttributes[currentODFIndex++]);
+           currentODFListSet[i*m_ODFsize + j] = currentVoxelAttributes[currentODFIndex++];
         }
 
         currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(i);
      }
 
     m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize, m_InstancesCount);
-    int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
-    glUniform1f(instanceCountLoc , float(m_InstancesCount));
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
     m_ODFMapTexture.Unbind();

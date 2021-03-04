@@ -45,10 +45,10 @@ out vec4 fragColor;
 
 void main (void) 
 {
-	/*setLighting(u_shadingModel, o_transformedLightSource, u_materialLighting/*o_glyphVertexColor,
-	o_expectatorPosition.xyz, o_transformedNormal.xyz, fragPos.xyz,
-	o_gouraudColor, o_flatColor,
-	fragColor);*/
+        /*setLighting(u_shadingModel, o_transformedLightSource, u_materialLighting/*o_glyphVertexColor,
+        o_expectatorPosition.xyz, o_transformedNormal.xyz, fragPos.xyz,
+        o_gouraudColor, o_flatColor,
+        fragColor);*/
 
 	fragColor = o_positionColorMap;
 }

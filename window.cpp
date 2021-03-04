@@ -37,32 +37,11 @@
 #include <Utilities/Timer.h>
 
 
+//QBall Q1(128*128, 4, 15, 15);
+//QBallRenderer QR1;
 
-
-using namespace std;
-
-
-
-int t = 15, f = 15;
-SphereODF ODF1(t, f);
-Texture test;
-int slot = 0;
-
-//SphereSet s1(4,3);
-IcoSphere t1(313);
-SphereSet s1(15,15);
-
-BSPLine bsp1;
-BSPLine bsp2;
-BSPLine bsp3;
-
-BicubicBezierSurface bz1;
-RevolutionHermite rh1;
-
-QBall Q1(2, 4, 15, 15);
-QBallRenderer QR1;
-
-Cilinder c1;
+QBallHemisphere Q1(4, 3, 15, 15);
+QBallEvenRenderer QR1;
 
 
 Window::~Window()
@@ -74,127 +53,15 @@ Window::~Window()
 /*******************************************************************************
  * OpenGL Events
  ******************************************************************************/
-void normalize(std::vector<float> &input, bool verbose = false)
-{
-    std::vector<int> nonValidIdx;
-    int idx = 0;
-    for(auto& element : input){
-        if(element < 0){
-            element = 0.03f;
-            nonValidIdx.push_back(idx);
-        }
-        idx++;
-    }
-
-    float min = std::numeric_limits<float>::max();
-    float max = std::numeric_limits<float>::min();
-    idx = 0;
-    for(auto& element : input){
-        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
-        {
-            if(element > max)
-                max = element;
-            if(element < min)
-                min = element;
-        }
-        idx++;
-    }
-    idx = 0;
-    for(auto& element : input){
-        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
-            element = (element - min)/(max - min);
-        idx++;
-    }
-
-    if(verbose)
-    {
-        int idx = 0;
-        for(auto& element : input)
-            std::cout << idx++ << ": " << element << std::endl;
-    }
-
-
-}
-
-void absoluteNormalize(std::vector<float> &input, bool verbose = false)
-{
-    std::vector<int> nonValidIdx;
-    int idx = 0;
-    for(auto& element : input){
-        element = fabs(element);
-    }
-
-    float min = std::numeric_limits<float>::max();
-    float max = std::numeric_limits<float>::min();
-    idx = 0;
-    for(auto& element : input){
-        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
-        {
-            if(element > max)
-                max = element;
-            if(element < min)
-                min = element;
-        }
-        idx++;
-    }
-    idx = 0;
-    for(auto& element : input){
-        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
-            element = (element - min)/(max - min);
-        idx++;
-    }
-
-    if(verbose)
-    {
-        int idx = 0;
-        for(auto& element : input)
-            std::cout << idx++ << ": " << element << std::endl;
-    }
-
-
-}
-
-void minMaxnormalize(std::vector<float> &input, bool verbose = false)
-{
-
-    float min = std::numeric_limits<float>::max();
-    float max = std::numeric_limits<float>::min();
-    for(auto& element : input){
-
-            if(element > max)
-                max = element;
-            if(element < min)
-                min = element;
-    }
-
-    for(auto& element : input){
-            element = (element - min)/(max - min);
-    }
-    if(verbose)
-    {
-        int idx = 0;
-        for(auto& element : input)
-            std::cout << idx++ << ": " << element << std::endl;
-    }
-
-
-}
-
-
 void Window::initializeGL()
 {
 
       initializeOpenGLFunctions();
-      c1.initialize();
+//      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));
+//      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
+//      m_lightSource.setShadingModel(LightSource::FLAT);
 
-
-
-      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));
-      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
-      m_lightSource.setShadingModel(LightSource::FLAT);
-
-////    test = Psi679871;
-
+    Q1.computeODFs();
     QR1.initialize(&Q1);
     viewPort();
 
@@ -204,40 +71,17 @@ void Window::initializeGL()
 
 void Window::paintGL()
 {
-//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 //    Timer T(__FUNCTION__);
 
-    /*EXAMPLE OF - DRAWING WITH glDrawArrays*/
-//    viewPort();
-    float bg[] = {0.0f,0.0f,0.0f,1.0f};
-    glClear( GL_DEPTH_BUFFER_BIT);
-    glClearBufferfv(GL_COLOR, 0, bg);
+//    float bg[] = {0.0f,0.0f,0.0f,1.0f};
+//    glClear( GL_DEPTH_BUFFER_BIT);
+//    glClearBufferfv(GL_COLOR, 0, bg);
 
 ////    renderCrossLine();
 
-
-//   ODF1.setProjectionMatrix(m_camera.projection());
-//   ODF1.setMVMatrix(m_camera.view());
-//   ODF1.render();
-
-
-//    update();
     draw();
-//    c1.setProjectionMatrix(m_camera.projection());
-//    c1.setMVMatrix(m_camera.view());
-//    c1.render();
     update();
-//    viewPort();
-//    float bg[] = {1.0f,1.0f,1.0f,1.0};
-//    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glClearBufferfv(GL_COLOR, 0, bg);
-//    QR1.setProjectionMatrix(m_camera.projection());
-//    QR1.setMVMatrix(m_camera.view());
-//    QR1.render();
-//    update();
-
-
 }
 
 void Window::teardownGL()
@@ -245,21 +89,6 @@ void Window::teardownGL()
     glUseProgram(0);
     exit(0);
 }
-
-void Window::addGlyph()
-{
-    std::vector<float> profile;
-    profile.resize(197);
-    for (auto &p:profile )
-        p = ((float)rand()/(float)(RAND_MAX));
-
-
-    ODF1.addGlyph(profile, glm::vec3(2*((float)rand()/(float)(RAND_MAX))-1,
-                                     2*((float)rand()/(float)(RAND_MAX))-1,
-                                     2*((float)rand()/(float)(RAND_MAX))-1), glm::vec3(0.0f,1.0f,0.0f), 0.1f);
-
-}
-
 void Window::viewPort()
 {
     if(m_currentWidth < m_currentHeight)
@@ -374,7 +203,7 @@ void Window::resizeGL(int width, int height)
 {
     m_currentWidth = QPaintDevice::devicePixelRatio()*width;
     m_currentHeight = QPaintDevice::devicePixelRatio()*height;
-    cout << "(width, height): (" << width << " , " << height << ")" << endl;
+//    cout << "(width, height): (" << width << " , " << height << ")" << endl;
     viewPort();
     draw();
 
@@ -392,19 +221,8 @@ void Window::draw()
     QR1.setProjectionMatrix(m_camera.projection());
     QR1.setMVMatrix(m_camera.view());
     QR1.render();
-
-
-
-
-
     update();
 
-
-
-//    ODF1.setProjectionMatrix(m_camera.projection());
-//    ODF1.setMVMatrix(m_camera.view());
-//    ODF1.render();
-//     update();
 
 }
 

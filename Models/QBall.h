@@ -35,9 +35,8 @@ enum KERNEL{
         INVERSE_MULTIQUADRIC,
         THIN_PLATE_SPLINE
     };
-private:
-    int m_vertexRes; /**< Amount of theta components of the spherical mesh, contained on the interval [0, 2pi)*/
-    int m_instancesAmount; /**< Amount of theta components of the spherical mesh, contained on the interval [pi/2, -pi/2]*/
+protected:
+    int m_instancesAmount; /**< Maximum amount of objects to be drawn*/
 
 
     float **m_ODF; /**< Pointer that stores pointers to each ODF for each index */
@@ -50,8 +49,6 @@ private:
     float m_scale;
     int m_ODFsize;
     int m_SHorder;
-    std::vector<float> m_phiSet;
-    std::vector<float> m_thetaSet;
 public:
 
     QBall(int instancesAmount = 30, int icoIterations = 3, int thetaRes = 15, int phiRes = 15);
@@ -60,7 +57,8 @@ public:
     /**
     * @brief Initialization and computation of QBall Algorithm. All the intermediate variable names used has the same name as in the base article
     */
-    void computeQBall();
+    virtual void computeODFs();
+    void computeTranslationMatrices(const unsigned int& instancesAmount);
 
     /**
     * @brief returns the ODF for voxel indexed by index
@@ -89,16 +87,6 @@ public:
     */
     std::vector<glm::vec3> getBaseDirections() const; /**< returns a copy of the spherical mesh directions*/
 
-    /**
-    * @brief returns the amount of elements on theta mesh
-    */
-//    int getThetaRes() const;
-
-    /**
-    * @brief returns the amount of elements on phi mesh
-    */
-//    int getPhiRes() const;
-
 
     int* getVolDimension() const;
 
@@ -107,11 +95,8 @@ public:
 
     int getInstancesAmount() const;
     float getScale() const;
-//    void setSphereSurface(int thetaRes, int phiRes);
-//    std::vector <glm::vec3> m_sphereAttributesBuffer;
-//    void setBaseDirections(const std::vector<glm::vec3> &baseDirections);
 
-private:
+protected:
     /**
     * @brief Apply the kernel already set up for two vectors, selected by m_kernel
     */
@@ -122,9 +107,6 @@ private:
 
 
 //    SphericalHarmonics m_SHCoeff;
-
-protected:
-
 
 };
 #endif // QBALL_H

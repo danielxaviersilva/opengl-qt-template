@@ -13,6 +13,9 @@
 
 #include "Models/QBall.h"
 #include "Models/QBallRenderer.h"
+
+#include "Models/QBallHemisphere.h"
+#include "Models/QBallEvenRenderer.h"
 #include <chrono>
 #include <thread>
 
