@@ -55,6 +55,7 @@ glm::mat4 CGUtilities::shiftZtoAxisMatrix(glm::vec3 axis)
 
 void CGUtilities::shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int> &index, bool verbose)
 {
+    const float dotMinThr = 0.999f;
     std::vector<int> indexChanges;
     indexChanges.resize(V.size());
 
@@ -68,12 +69,12 @@ void CGUtilities::shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int
 
     for (int i = 0; i < vSize -1;i++)
         for (int j = i+1; j < vSize; j++)
-            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) == 1.0f)
+            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) >= dotMinThr)
                 indexChanges[j] = i;
 
     for (int i = 0; i < vSize -1;i++)
         for (int j = i+1; j < vSize; j++)
-            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) == 1.0f){
+            if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) >= dotMinThr){
                 V.erase(V.begin() + j);
                 for (auto & id: indexChanges)//unsigned int k = 0; k < indexChanges.size(); k++)
                     if (id >= j)
@@ -87,4 +88,60 @@ void CGUtilities::shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int
 
     if (verbose)
         std::cout << V.size() << std::endl;
+}
+
+bool CGUtilities::AlignEvenMesh(std::vector<glm::vec3> &V, std::vector<unsigned int> &idxBuffer)
+{
+    std::vector<unsigned int> newIdxBuffer = idxBuffer;
+
+    const float dotMinThr = 0.999f;
+    for (size_t i = 0; i < V.size()-1; i+=2) {
+        for(size_t j = i+1; j < V.size(); j++) {
+            if(glm::dot(V[j], V[i]) < -dotMinThr) {
+//                std::cout << "Troca: " << j << ", " << i+1 << std::endl;
+                glm::vec3 temp = V[j];
+                V[j] = V[i+1];
+                V[i+1] = temp;
+                for (auto & idx : newIdxBuffer) {
+                    if (idx == i+1) {
+                        idx = j;
+                        continue;
+                    }
+                    if (idx == j) {
+                        idx = i+1;
+                        continue;
+                    }
+
+                }
+                break;
+            }
+            if (j == V.size() - 1 && i > V.size()-2) {
+                std::cout << "Ops! Mesh not even" << std::endl;
+                idxBuffer = newIdxBuffer;
+                return false;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < V.size(); i+=2) {
+        if (V[i].x < 0.0f) {
+            glm::vec3 temp = V[i];
+            V[i] = V[i+1];
+            V[i+1] = temp;
+            for (auto & idx : newIdxBuffer) {
+                if (idx == i) {
+                    idx = i+1;
+                    continue;
+                }
+                if (idx == i+1) {
+                    idx = i;
+                    continue;
+                }
+            }
+        }
+
+    }
+    idxBuffer = newIdxBuffer;
+    return true;
+
 }

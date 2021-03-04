@@ -14,6 +14,7 @@ protected:
      glm::mat4 shiftYtoAxisMatrix(glm::vec3 axis);
      glm::mat4 shiftZtoAxisMatrix(glm::vec3 axis);     
      void shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int> &index, bool verbose = false);
+     bool AlignEvenMesh(std::vector<glm::vec3> &V, std::vector<unsigned int> &idxBuffer);
 
 
 

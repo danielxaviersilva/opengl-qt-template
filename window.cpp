@@ -59,8 +59,8 @@ BSPLine bsp3;
 BicubicBezierSurface bz1;
 RevolutionHermite rh1;
 
-QBall Q1(197, 1, 15, 15);
-QBallRenderer QR1(15, 15);
+QBall Q1(2, 4, 15, 15);
+QBallRenderer QR1;
 
 Cilinder c1;
 
@@ -193,51 +193,9 @@ void Window::initializeGL()
       m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
       m_lightSource.setShadingModel(LightSource::FLAT);
 
-//      c1.setLighting(&m_lightSource);
-
-
-//    rh1.initialize();
-//    rh1.setColor(glm::vec4(1.0f, 0.0f, 0.0f,1.0f));
-
-//    std::vector<float> test;
 ////    test = Psi679871;
-//    test = Psi679962;
 
-
-//        Texture t;
-
-//    for(auto & elTest : test)
-//    {
-//        elTest = 1.0f;
-//    }
-
-
-
-//     ODF1.initialize();
-//      absoluteNormalize(test, false);
-//     minMaxnormalize(test, true);
-
-//      normalize(test,false);
-
-//           test[0] = test[181] = 1.0f;
-
-//      for (auto& el : test)
-//          el = .5f;
-//      for (int i = 0; i< 50; i++)
-//          test.push_back(0.5f);
-
-//      ODF1.addGlyph(test, glm::vec3(0.f));
-
-
-//      ODF1.addThreeAngleGlyph(test, 0.25f);
-      QR1.initialize(&Q1);
-
-//    _check_gl_error(__FILE__, __LINE__);
-
-//    glEnable(GL_BLEND);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-//    draw();
+    QR1.initialize(&Q1);
     viewPort();
 
 }

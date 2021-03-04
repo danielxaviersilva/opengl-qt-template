@@ -43,6 +43,9 @@ private:
     float **m_ODF; /**< Pointer that stores pointers to each ODF for each index */
     float *m_GFA;/**< array for all GFA computed for each voxel*/
 
+    std::vector<glm::vec3> m_baseDirections;
+    std::vector<unsigned int> m_indexBuffer;
+
     glm::mat4 * m_translateMatrix;
     float m_scale;
     int m_ODFsize;
@@ -51,7 +54,7 @@ private:
     std::vector<float> m_thetaSet;
 public:
 
-    QBall(int vertexRes = 197, int instancesAmount = 30, int thetaRes = 15, int phiRes = 15, int SH_order = 3);
+    QBall(int instancesAmount = 30, int icoIterations = 3, int thetaRes = 15, int phiRes = 15);
     ~QBall();
 
     /**
@@ -89,35 +92,36 @@ public:
     /**
     * @brief returns the amount of elements on theta mesh
     */
-    int getThetaRes() const;
+//    int getThetaRes() const;
 
     /**
     * @brief returns the amount of elements on phi mesh
     */
-    int getPhiRes() const;
+//    int getPhiRes() const;
 
 
     int* getVolDimension() const;
 
     int getVoxelAmount() const;
     glm::mat4 getVoxelDisplacement(int index);
+
     int getInstancesAmount() const;
-    void setInstancesAmount(int instancesAmount);
-
     float getScale() const;
+//    void setSphereSurface(int thetaRes, int phiRes);
+//    std::vector <glm::vec3> m_sphereAttributesBuffer;
+//    void setBaseDirections(const std::vector<glm::vec3> &baseDirections);
 
-
-    void setSphereSurface(int thetaRes, int phiRes);
-    std::vector <glm::vec3> m_sphereAttributesBuffer;
-    std::vector<unsigned int> m_idxSet;
 private:
     /**
     * @brief Apply the kernel already set up for two vectors, selected by m_kernel
     */
     inline float kernel(const glm::vec3& v1, const glm::vec3& v2);
 
+    void generateIcoCoordsMeshSphere(const unsigned int meshIterations);
+    void generateUVCoordsMeshSphere(const unsigned int thetaRes, const unsigned int phiRes);
 
-    SphericalHarmonics m_SHCoeff;
+
+//    SphericalHarmonics m_SHCoeff;
 
 protected:
 

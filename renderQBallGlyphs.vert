@@ -67,8 +67,10 @@ void setLighting(in float shadingModel, in LightSource source, in MaterialLighti
 void main(void) 
 {
 	//vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), gl_InstanceID/(u_instanceCount-1));
-	vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), (gl_InstanceID+0.5)/(u_instanceCount));
-	float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
+        //vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), (gl_InstanceID+0.5)/(u_instanceCount));
+        //float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
+
+        float vertexODFMap = texelFetch(u_ODFMap,ivec2((gl_InstanceID, gl_VertexID)), 0)[0];
 
 
         vec3 normalizedvertex = normalize(vec3(vertex));

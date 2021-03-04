@@ -1,18 +1,15 @@
 #include "QBallRenderer.h"
 #include <Utilities/Timer.h>
+#include <glm/gtx/string_cast.hpp>
 
-QBallRenderer::QBallRenderer(int theta, int phi): m_thetaRes(theta), m_phiRes(phi), m_initialized(false), m_slot(0)
-{
-
-}
+QBallRenderer::QBallRenderer(): m_initialized(false), m_slot(0)
+{}
 
 void QBallRenderer::initialize(QBall *qBall)
 {
     m_InstancesCount = qBall->getInstancesAmount();
     m_qBallRef = qBall;
-    if(!m_initialized)
-    {
-
+    if(!m_initialized) {
         m_initialized = true;
         m_program.loadProgram("./Models/renderQBallGlyphs.vert","./Models/renderQBallGlyphs.frag");
         m_program.useProgram();
@@ -28,7 +25,7 @@ void QBallRenderer::initialize(QBall *qBall)
         int scaleLoc = m_program.getUniformLocation("u_scale");
         float scale = m_qBallRef->getScale();
         std::cout << scale << std::endl;
-        glUniform1f(glyphResolutionloc,m_ODFsize);
+        glUniform1f(glyphResolutionloc, m_ODFsize);
         glUniform1f(scaleLoc, scale);
 
         setProjectionMatrix(glm::mat4(1.0f));
@@ -62,59 +59,24 @@ void QBallRenderer::setMVMatrix(glm::mat4 mvMatrix)
 
 void QBallRenderer::setSphereSurface()
 {
-//    std::vector <baseSphereAttributes> sphereAttributesBuffer;
-    std::vector <glm::vec3> sphereAttributesBuffer;
+    std::vector <glm::vec3> sphereAttributesBuffer = m_qBallRef->getBaseDirections();
+    std::vector<unsigned int> idxSet = m_qBallRef->getIndexBuffer();
 
-    std::vector<unsigned int> idxSet;
-//    idxSet.reserve(6*m_thetaRes*(m_phiRes-1));
-//    sphereAttributesBuffer.reserve(m_phiRes*m_thetaRes);
-    sphereAttributesBuffer = m_qBallRef->m_sphereAttributesBuffer;
-    idxSet = m_qBallRef->m_idxSet;
-    //Interval of meshes:
-    //phi: [-pi/2, pi/2]
-    //theta: [0, 2pi)
-    //The loop is designed to make a closed circle on theta,
-    //The only repetition of elements on buffer are when phi = ±pi/2
+    for (auto & x:sphereAttributesBuffer)
+        std::cout << glm::to_string(x) << std::endl;
+    for (auto & x:idxSet)
+        std::cout << x<< std::endl;
 
-//    for (int i = 0; i < m_phiRes; i++)
-//    {
-//        float phi =  M_PI/2 - M_PI*i/(m_phiRes - 1);
-//        for(int j = 0; j<m_thetaRes; j++)
-//        {
-//             float theta = 2*(M_PI)*j/(m_thetaRes);
-
-////             sphereAttributesBuffer.emplace_back(baseSphereAttributes(
-////             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 1.0f), //vertex
-////             glm::vec4(cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta), 0.0f))); //normals
-
-//             sphereAttributesBuffer.emplace_back(glm::vec3
-//             (cos(phi)*cos(theta), sin(phi), cos(phi)*sin(theta))); //normals
-
-//              if (i < m_phiRes -1)
-//              {
-//                    idxSet.emplace_back(i*m_thetaRes + j                   );
-//                    idxSet.emplace_back((i+1)*m_thetaRes + j               );
-//                    idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
-//                    idxSet.emplace_back(i*m_thetaRes + j                   );
-//                    idxSet.emplace_back((i+1)*m_thetaRes + (j+1)%m_thetaRes);
-//                    idxSet.emplace_back(i*m_thetaRes + (j+1)%m_thetaRes    );
-//              }
-//        }
-//     }
-
-        shrinkVec3(sphereAttributesBuffer, idxSet, true);
-        m_ODFsize = sphereAttributesBuffer.size();
-
-        m_verticesSize = idxSet.size();//sphereAttributesBuffer.size();
-
-//        m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(baseSphereAttributes));
-          m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(glm::vec3));
-        _check_gl_error(__FILE__,__LINE__);
+//    shrinkVec3(sphereAttributesBuffer, idxSet, true);
+    m_ODFsize = sphereAttributesBuffer.size();
+    m_verticesSize = idxSet.size();
+    m_SphereVBO.updateBufferData(sphereAttributesBuffer.data(), sphereAttributesBuffer.size()*sizeof(glm::vec3));
+    _check_gl_error(__FILE__,__LINE__);
 
 
-        m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
-        m_idxBuffer.unbind();
-        _check_gl_error(__FILE__,__LINE__);
+    m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
+    m_idxBuffer.unbind();
+    _check_gl_error(__FILE__,__LINE__);
 }
 
 void QBallRenderer::setInstancedVertexAttribBuffer()
@@ -123,8 +85,6 @@ void QBallRenderer::setInstancedVertexAttribBuffer()
 
     std::vector<glm::mat4> currentReorientMatrixSet;
     std::vector<float> currentODFListSet;
-
-
 //    currentReorientMatrixSet.reserve(m_pts_from_tex_coord.m_num_points);
 //    currentODFListSet.reserve(m_pts_from_tex_coord.m_num_points*m_ODFsize);
 
@@ -133,19 +93,16 @@ void QBallRenderer::setInstancedVertexAttribBuffer()
     currentODFListSet.resize(m_ODFsize*m_InstancesCount);
 
 #pragma omp parallel
-    for(unsigned int i = 0; i < m_InstancesCount; i++)
-    {
-
-//            float currentGFA = volumeQBall->getVoxelGFA(currentVoxelIndex);
+    for(unsigned int i = 0; i < m_InstancesCount; i++) {
 
         float* currentVoxelAttributes = m_qBallRef->getVoxelODF(i);
         int currentODFIndex = 0;
-        for(int j = 0; j< m_ODFsize;j++){
-           currentODFListSet[i*m_ODFsize + j] = (currentVoxelAttributes[currentODFIndex++]);
-            }
+        for(int j = 0; j< m_ODFsize;j++) {
+           currentODFListSet[i*m_ODFsize + j] = .7f;//(currentVoxelAttributes[currentODFIndex++]);
+        }
 
         currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(i);
-      }
+     }
 
     m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize, m_InstancesCount);
     int instanceCountLoc = m_program.getUniformLocation("u_instanceCount");
@@ -203,7 +160,6 @@ void QBallRenderer::render()
     m_vao.bind();
     m_idxBuffer.bind();
     setInstancedVertexAttribBuffer();
-//    updateODFMapTexture();
 
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
