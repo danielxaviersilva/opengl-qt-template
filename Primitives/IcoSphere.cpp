@@ -218,7 +218,7 @@ void IcoSphere::setSphereSurface()
         std::cout << "idxBufferSize: " << idxSet.size() << std::endl;
         std::cout << "vertexListSize: " << sphereVertex.size() << std::endl << std::endl;
 
-        std::vector<unsigned int> idxAux;// = idxSet;
+        std::vector<unsigned int> idxAux;
         for (uint32_t i = 0; i < idxSet.size()/3; ++i)
         {
             const uint32_t f0 = idxSet[i * 3];
@@ -259,8 +259,7 @@ void IcoSphere::setSphereSurface()
 
     }
 
-    std::cout << "idxBufferSize: " << idxSet.size() << std::endl;
-    std::cout << "vertexListSize: " << sphereVertex.size() << std::endl << std::endl;
+
 
 
     sphereAttributesBuffer = vertexListToVertexNormalAttributes(sphereVertex);

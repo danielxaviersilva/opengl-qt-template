@@ -91,6 +91,8 @@ void Cilinder::setCilinderSurface()
            }
         m_idxBuffer.updateBufferData(idxSet.data(),idxSet.size());
         m_idxBuffer.unbind();
+
+
         //Circle Upper part
         cilinderAttrib.push_back(cilinderAttributes(
         tMat*glm::vec4(0.0f, m_height/2, 0.0f, 1.0f),
@@ -112,8 +114,7 @@ void Cilinder::setCilinderSurface()
                tMat*glm::vec4(m_radius*cos(thetaGrid[i%m_thetaRes]), -m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]), 1.0f),
                tMatNormal*glm::vec4(glm::normalize(glm::vec3(m_radius*cos(thetaGrid[i%m_thetaRes]), -m_height/2, m_radius*sin(thetaGrid[i%m_thetaRes]))) , 0.0f)));
 
-           for (int count = 0; count < m_heightRes; count++)
-           {
+           for (int count = 0; count < m_heightRes; count++) {
                delete [] X[count];
                delete [] Y[count];
                delete [] Z[count];
@@ -196,9 +197,9 @@ void Cilinder::setLighting()
 //    glm::vec4 expectator_position = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
 
     //ref to category of how models are computed. 0,1 or 2.
-    float shading_model       = 2.0f;
+    float shading_model       = 1.0f;
     //Light source Parameters
-    glm::vec4 light_location      = glm::vec4(-1.0f,0.0,0.0,1.0);
+    glm::vec4 light_location      = glm::vec4(-1.0f,1.0,0.0,1.0);
     glm::vec4 spot_direction      = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);
     float     spot_exponent       = 25.0f;
     float     spot_cutoff         = 180.0f;

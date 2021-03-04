@@ -9,6 +9,14 @@ CONFIG -= app_bundle
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+CONFIG(debug, debug|release) {
+  message("Debug")
+  DEFINES += TESTE1
+
+}else{
+  message("Release")
+}
+
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -17,6 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         Additionals/SphericalODF.cpp \
         LightSource.cpp \
+        Models/QBall.cpp \
+        Models/QBallRenderer.cpp \
         Primitives/BSPLine.cpp \
         Primitives/BicubicBezierSurface.cpp \
         Primitives/HermiteSweep.cpp \
@@ -26,22 +36,28 @@ SOURCES += \
         Primitives/cilinder.cpp \
         Primitives/cube.cpp \
         Primitives/sphere.cpp \
+        SphericalHarmonics.cpp \
         Utilities/CGUtilities.cpp \
         Utilities/Camera.cpp \
         Utilities/IndexBuffer.cpp \
         Utilities/Shader.cpp \
         Utilities/Texture.cpp \
+        Utilities/Timer.cpp \
         Utilities/VertexArray.cpp \
         Utilities/VertexBuffer.cpp \
         main.cpp \
         window.cpp
 
 
-
-
+QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -I/usr/local/include
+QMAKE_LFLAGS += -lomp
 
 INCLUDEPATH += "/usr/local/Cellar/glm/0.9.9.5/include" \
-                "/usr/local/Cellar/glew/2.1.0_1/include/"
+                "/usr/local/Cellar/glew/2.1.0_1/include/" \
+#                "/Users/daniel_mac/Downloads/boost_1_75_0"
+
+LIBS += -L /usr/local/lib /usr/local/lib/libomp.dylib
+      #  "/Users/daniel_mac/Downloads/boost_1_75_0/stage/lib"
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -50,6 +66,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     Additionals/SphericalODF.h \
     LightSource.h \
+    Models/QBall.h \
+    Models/QBallRenderer.h \
     Primitives/BSPLine.h \
     Primitives/BicubicBezierSurface.h \
     Primitives/HermiteSweep.h \
@@ -60,11 +78,13 @@ HEADERS += \
     Primitives/cube.h \
     Primitives/sphere.h \
     QBallGlyphsCoefficientsSample.h \
+    SphericalHarmonics.h \
     Utilities/CGUtilities.h \
     Utilities/Camera.h \
     Utilities/IndexBuffer.h \
     Utilities/Shader.h \
     Utilities/Texture.h \
+    Utilities/Timer.h \
     Utilities/VertexArray.h \
     Utilities/VertexBuffer.h \
     Utilities/renderCrossLine.h \
@@ -74,6 +94,8 @@ HEADERS += \
 DISTFILES += \
     Isa.png \
     Mariana.png \
+    Models/renderQBallGlyphs.frag \
+    Models/renderQBallGlyphs.vert \
     SolidObjectDrawer.frag \
     SolidObjectDrawer.vert \
     hello.frag \

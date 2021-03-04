@@ -7,11 +7,12 @@
 #define GOURAUD 1.0
 #define FLAT 2.0
 
-in vec4 normal;
-in vec4 vertex;
+//in vec4 normal;
+in vec3 vertex;
 
 uniform float u_glyphResolution;
 uniform float u_instanceCount;
+uniform float u_scale;
 
 //in int gl_VertexID;
 //in int gl_InstanceID;
@@ -36,12 +37,13 @@ uniform LightSource u_lightSource;
 uniform MaterialLighting u_materialLighting;
 
 
-
-in vec3 instance_displacement;
-in mat4 instance_reorientationMatrix;
+in mat4 instance_displacement;
 
 
 uniform float u_shadingModel;
+
+
+
 
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_modelViewMatrix;
@@ -66,7 +68,6 @@ void setLighting(in float shadingModel, in LightSource source, in MaterialLighti
 
 void main(void) 
 {
-	//vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), gl_InstanceID/(u_instanceCount-1));
 	vec2 vertexODFCoord = vec2((gl_VertexID +0.5)/(u_glyphResolution), (gl_InstanceID+0.5)/(u_instanceCount));
 	float vertexODFMap = texture(u_ODFMap, vertexODFCoord)[0];
 
@@ -81,7 +82,7 @@ void main(void)
 	
 //	o_expectatorPosition = u_projectionMatrix*u_modelViewMatrix *u_expectatorPosition;
 
-        vec4 instanceVertex = vec4(vertexODFMap*(instance_reorientationMatrix*vertex).xyz + instance_displacement, 1.0);
+        vec4 instanceVertex = instance_displacement*vec4((vertexODFMap*u_scale*vertex).xyz, 1.0);
 //	vec4 instanceNormal = transpose(inverse(instance_reorientationMatrix))*normal;
 
         fragPos = u_projectionMatrix*u_modelViewMatrix*instanceVertex;

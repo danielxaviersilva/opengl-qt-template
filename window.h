@@ -10,6 +10,13 @@
 #include "./Utilities/Camera.h"
 #include "LightSource.h"
 
+
+#include "Models/QBall.h"
+#include "Models/QBallRenderer.h"
+#include <chrono>
+#include <thread>
+
+
 class QOpenGLShaderProgram;
 
 class Window : public QOpenGLWindow
@@ -21,17 +28,22 @@ class Window : public QOpenGLWindow
 public:
   ~Window();
 
+
   void initializeGL() override;
   void resizeGL(int width, int height) override;
   void paintGL() override;
+  inline void draw();
   void teardownGL();
   void show_variables();
+  void addGlyph();
 
 private:
   Camera m_camera;
   LightSource m_lightSource;
   int m_currentWidth, m_currentHeight;
   void viewPort();
+
+
 
 
   // OpenGL State Information
@@ -46,6 +58,7 @@ protected:
 //  void moveEvent(QMoveEvent *ev);
 //     void voidmouseMoveEvent(QMouseEvent *ev);
   void keyPressEvent(QKeyEvent *event) override;
+//  void screenChanged(QScreen* event) override;
 //  void keyReleaseEvent(QKeyEvent *event);
 //  void mousePressEvent(QMouseEvent *event);
 //  void mouseReleaseEvent(QMouseEvent *event);

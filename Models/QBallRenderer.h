@@ -1,6 +1,6 @@
-#ifndef SPHERICALODF_H
-#define SPHERICALODF_H
-
+#ifndef QBALLRENDERER_H
+#define QBALLRENDERER_H
+#include "QBall.h"
 
 #include <iostream>
 #include <vector>
@@ -17,28 +17,10 @@
 #include "../LightSource.h"
 #include "../Utilities/Texture.h"
 
-//describes sphere that each coordinate is in vec4 form (x,y,z alfa=1).
 
-class SphereODF : protected CGUtilities
+class QBallRenderer: protected CGUtilities
 {
 
-
-    typedef struct _base_sphere_attributes{
-        glm::vec4 vertex;
-        glm::vec4 normal;
-//        glm::vec2 textureCoords;
-        _base_sphere_attributes(glm::vec4 inVertex, glm::vec4 inNormal): vertex(inVertex), normal(inNormal){};
-
-    } baseSphereAttributes;
-
-    typedef struct _instanced_sphere_attributes{
-        glm::vec3 center;
-        glm::mat4 reorientMatrix;
-    } InstancedSphereAttributes;
-
-    std::vector<InstancedSphereAttributes> m_instancedSphereAttributes;
-
-    std::vector<float> m_ODFMap;
 
     VertexBuffer m_SphereVBO;
     VertexBuffer m_SphereAttributesVBO;
@@ -58,45 +40,33 @@ class SphereODF : protected CGUtilities
     int m_thetaRes;
     int m_phiRes;
 
-    int m_meshPointsAmount;
+    int m_ODFsize;
 
-    int m_InstancesCount;
+    unsigned int m_InstancesCount;
 
     bool m_initialized;
     bool m_attributesFlag;
 
     int m_slot;
 
+    QBall * m_qBallRef;
     Texture m_ODFMapTexture;
 
-
 public:
-    SphereODF(int theta = 30, int phi = 30);
+    QBallRenderer(int theta = 15, int phi = 15);
     void addGlyph(const std::vector<float> &ODFList, glm::vec3 center, glm::vec3 axis = glm::vec3(0.0f,1.0f,0.0f), float scale = 1.0f);
     void addThreeAngleGlyph(const std::vector<float> &ODFList, float scale = 1.0f);
 //    void addSphere(float r = 0.5, glm::vec3 center = glm::vec3(0.0f));
 
 
-    void initialize(LightSource * lightSource = new LightSource);
+    void initialize(QBall* qBall);
     void render();
 
 
-    void setMaterialLighting(glm::vec4 materialAmbientColor  = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                             glm::vec4 materialDiffuseColor  = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
-                             glm::vec4 materialSpecularColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                             float     shineness             = 5.0f                              );
-
-    void updateMaterialLighting();
 
 
     void setProjectionMatrix(glm::mat4 projectionMatrix);
     void setMVMatrix(glm::mat4 mvMatrix);
-
-    void setLightSource(LightSource *lightSource);
-
-
-    int getThetaRes() const;
-    int getPhiRes() const;
 
     void instantDrawGlyphs();
 
@@ -105,6 +75,9 @@ private:
     void setSphereSurface();
     void updateODFMapTexture();
 
+    void setInstancedVertexAttribBuffer();
+
 };
 
-#endif // SPHERICALODF_H
+
+#endif // QBALLRENDERER_H

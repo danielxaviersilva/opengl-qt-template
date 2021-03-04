@@ -24,7 +24,6 @@ void SphereODF::addGlyph(const std::vector<float> &ODFList, glm::vec3 center, gl
 
 
 
-
     m_instancedSphereAttributes.push_back({center, shiftYtoAxisMatrix(axis)});
     if (!m_attributesFlag)
         m_attributesFlag = true;
@@ -258,22 +257,22 @@ void SphereODF::render()
 //    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#ifndef QT_NO_DEBUG
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#endif
     glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, int(m_instancedSphereAttributes.size()));
     _check_gl_error(__FILE__,__LINE__);
 
 //    glDisable(GL_DEPTH_TEST);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#ifndef QT_NO_DEBUG
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
     glDisable(GL_CULL_FACE);
 
     m_ODFMapTexture.deleteTexture();
     m_idxBuffer.unbind();
     m_vao.unbind();
     m_program.release();
-
-
-
 }
 
 int SphereODF::getThetaRes() const
@@ -284,6 +283,49 @@ int SphereODF::getThetaRes() const
 int SphereODF::getPhiRes() const
 {
     return m_phiRes;
+}
+
+void SphereODF::instantDrawGlyphs()
+{
+    if (!m_initialized)
+    {
+        std::cerr << "SphereODF.render(): not rendering because not initialized yet. Use method initialize()" << std::endl;
+        return;
+    }
+//    if (!m_attributesFlag){
+//        std::cerr << "SphereODF.rendering(): not rendering because there isn't any sphere to render. Use method add(float radius, glm::vec3 center)." << std::endl;
+//        return;
+//    }
+    m_program.useProgram();
+    m_vao.bind();
+    m_idxBuffer.bind();
+//    updateODFMapTexture();
+
+//    glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
+    m_ODFMapTexture.Bind(m_slot);
+
+//    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+#ifndef QT_NO_DEBUG
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#endif
+    glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, int(m_instancedSphereAttributes.size()));
+    _check_gl_error(__FILE__,__LINE__);
+
+//    glDisable(GL_DEPTH_TEST);
+#ifndef QT_NO_DEBUG
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
+    glDisable(GL_CULL_FACE);
+
+    m_ODFMapTexture.deleteTexture();
+    m_idxBuffer.unbind();
+    m_vao.unbind();
+    m_program.release();
+
+
+
 }
 
 void SphereODF::setVaoLayout()

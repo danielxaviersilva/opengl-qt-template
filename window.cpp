@@ -33,7 +33,11 @@
 
 
 
-#include "QBallGlyphsCoefficientsSample.h"
+//#include "QBallGlyphsCoefficientsSample.h"
+#include <Utilities/Timer.h>
+
+
+
 
 using namespace std;
 
@@ -54,6 +58,11 @@ BSPLine bsp3;
 
 BicubicBezierSurface bz1;
 RevolutionHermite rh1;
+
+QBall Q1(197, 1, 15, 15);
+QBallRenderer QR1(15, 15);
+
+Cilinder c1;
 
 
 Window::~Window()
@@ -90,10 +99,6 @@ void normalize(std::vector<float> &input, bool verbose = false)
         }
         idx++;
     }
-
-
-
-
     idx = 0;
     for(auto& element : input){
         if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
@@ -111,134 +116,168 @@ void normalize(std::vector<float> &input, bool verbose = false)
 
 }
 
+void absoluteNormalize(std::vector<float> &input, bool verbose = false)
+{
+    std::vector<int> nonValidIdx;
+    int idx = 0;
+    for(auto& element : input){
+        element = fabs(element);
+    }
+
+    float min = std::numeric_limits<float>::max();
+    float max = std::numeric_limits<float>::min();
+    idx = 0;
+    for(auto& element : input){
+        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
+        {
+            if(element > max)
+                max = element;
+            if(element < min)
+                min = element;
+        }
+        idx++;
+    }
+    idx = 0;
+    for(auto& element : input){
+        if(!std::count(nonValidIdx.begin(), nonValidIdx.end(), idx))
+            element = (element - min)/(max - min);
+        idx++;
+    }
+
+    if(verbose)
+    {
+        int idx = 0;
+        for(auto& element : input)
+            std::cout << idx++ << ": " << element << std::endl;
+    }
+
+
+}
+
+void minMaxnormalize(std::vector<float> &input, bool verbose = false)
+{
+
+    float min = std::numeric_limits<float>::max();
+    float max = std::numeric_limits<float>::min();
+    for(auto& element : input){
+
+            if(element > max)
+                max = element;
+            if(element < min)
+                min = element;
+    }
+
+    for(auto& element : input){
+            element = (element - min)/(max - min);
+    }
+    if(verbose)
+    {
+        int idx = 0;
+        for(auto& element : input)
+            std::cout << idx++ << ": " << element << std::endl;
+    }
+
+
+}
+
+
 void Window::initializeGL()
 {
+
       initializeOpenGLFunctions();
-
-
-//      m_lightSource.setAmbient(glm::vec4(1.5f, 0.5f,0.5f,1.0f));
-//      m_lightSource.setPosition(glm::vec4(0.0f, 0.0f,0.0f,1.0f));
-//      m_lightSource.setShadingModel(LightSource::FLAT);
-
-
-    rh1.initialize();
-    rh1.setColor(glm::vec4(1.0f, 0.0f, 0.0f,1.0f));
+      c1.initialize();
 
 
 
+      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));
+      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
+      m_lightSource.setShadingModel(LightSource::FLAT);
+
+//      c1.setLighting(&m_lightSource);
 
 
-     ODF1.initialize();
-      std::vector<float> test = Psi2457726;
-      normalize(test, false);
+//    rh1.initialize();
+//    rh1.setColor(glm::vec4(1.0f, 0.0f, 0.0f,1.0f));
+
+//    std::vector<float> test;
+////    test = Psi679871;
+//    test = Psi679962;
+
+
+//        Texture t;
+
+//    for(auto & elTest : test)
+//    {
+//        elTest = 1.0f;
+//    }
+
+
+
+//     ODF1.initialize();
+//      absoluteNormalize(test, false);
+//     minMaxnormalize(test, true);
+
+//      normalize(test,false);
+
+//           test[0] = test[181] = 1.0f;
 
 //      for (auto& el : test)
 //          el = .5f;
+//      for (int i = 0; i< 50; i++)
+//          test.push_back(0.5f);
 
 //      ODF1.addGlyph(test, glm::vec3(0.f));
 
 
-      ODF1.addThreeAngleGlyph(test, 0.5f);
+//      ODF1.addThreeAngleGlyph(test, 0.25f);
+      QR1.initialize(&Q1);
 
-//      s1.initialize();
-//      s1.addSphere();
-//      s1.setMaterialLighting(3.0f*glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-//                                glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-//                                glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        t1.initialize();
-        t1.addSphere();
-        t1.setMaterialLighting(3.0f*glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-//      for (auto &psi : Psi874797)
-//          psi = pow(psi, 3);
+//    _check_gl_error(__FILE__, __LINE__);
 
-
-
-
-
-//      ODF1.addGlyph(test, glm::vec3( 0.5f,  0.5, 0.0f) , glm::vec3(0.0f,0.0f,1.0f), 0.5f);
-//      ODF1.addGlyph(testODF2, glm::vec3(-0.5f, -0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-//      ODF1.addGlyph(ODFpar3, glm::vec3(-0.5f,  0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-
-//    ODF1.addGlyph(psi29016, glm::vec3( 0.5f,  0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-//    ODF1.addGlyph(psi15668, glm::vec3(-0.5f, -0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-
-
-
-//    ODF1.addGlyph(Psi293, glm::vec3( 0.5f,  0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-//    ODF1.addGlyph(Psi5040, glm::vec3( -0.5f,  0.5, 0.0f) , glm::vec3(0.0f,1.0f,0.0f), 0.5f);
-
-
-
-
-//          std::reverse(ODF.begin(),ODF.end());
-
-
-//      ODF1.addSphere(ODFpar3,glm::vec3(.5f));
-
-//    gpuProgram.programVarInfo();
-    _check_gl_error(__FILE__, __LINE__);
-
-
-//    printContextInformation();
 //    glEnable(GL_BLEND);
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+//    draw();
+    viewPort();
+
 }
 
 
 
 void Window::paintGL()
 {
-//    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+//    Timer T(__FUNCTION__);
 
     /*EXAMPLE OF - DRAWING WITH glDrawArrays*/
-    viewPort();
-    float bg[] = {0.0f,0.0f,0.0f,1.0};
+//    viewPort();
+    float bg[] = {0.0f,0.0f,0.0f,1.0f};
     glClear( GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
 
-//    renderCrossLine();
+////    renderCrossLine();
 
 
-   ODF1.setProjectionMatrix(m_camera.projection());
-   ODF1.setMVMatrix(m_camera.view());
-   ODF1.render();
-
-//   s1.setProjectionMatrix(m_camera.projection());
-//   s1.setMVMatrix(m_camera.view());
-//   s1.render();
-
-    t1.setProjectionMatrix(m_camera.projection());
-    t1.setMVMatrix(m_camera.view());
-    t1.render();
-
-//    bsp1.setProjectionMatrix(m_camera.projection());
-//    bsp1.setMVMatrix(m_camera.view());
-//    bsp1.render();
-
-//    bsp2.setProjectionMatrix(m_camera.projection());
-//    bsp2.setMVMatrix(m_camera.view());
-//    bsp2.render();
-
-//    bsp3.setProjectionMatrix(m_camera.projection());
-//    bsp3.setMVMatrix(m_camera.view());
-//    bsp3.render();
+//   ODF1.setProjectionMatrix(m_camera.projection());
+//   ODF1.setMVMatrix(m_camera.view());
+//   ODF1.render();
 
 
-//    bz1.setProjectionMatrix(m_camera.projection());
-//    bz1.setMVMatrix(m_camera.view());
-//    bz1.render();
-
-//      rh1.setProjectionMatrix(m_camera.projection());
-//      rh1.setMVMatrix(m_camera.view());
-//      rh1.render();
-
-
-
-
-
+//    update();
+    draw();
+//    c1.setProjectionMatrix(m_camera.projection());
+//    c1.setMVMatrix(m_camera.view());
+//    c1.render();
     update();
+//    viewPort();
+//    float bg[] = {1.0f,1.0f,1.0f,1.0};
+//    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glClearBufferfv(GL_COLOR, 0, bg);
+//    QR1.setProjectionMatrix(m_camera.projection());
+//    QR1.setMVMatrix(m_camera.view());
+//    QR1.render();
+//    update();
 
 
 }
@@ -247,6 +286,20 @@ void Window::teardownGL()
 {
     glUseProgram(0);
     exit(0);
+}
+
+void Window::addGlyph()
+{
+    std::vector<float> profile;
+    profile.resize(197);
+    for (auto &p:profile )
+        p = ((float)rand()/(float)(RAND_MAX));
+
+
+    ODF1.addGlyph(profile, glm::vec3(2*((float)rand()/(float)(RAND_MAX))-1,
+                                     2*((float)rand()/(float)(RAND_MAX))-1,
+                                     2*((float)rand()/(float)(RAND_MAX))-1), glm::vec3(0.0f,1.0f,0.0f), 0.1f);
+
 }
 
 void Window::viewPort()
@@ -344,7 +397,18 @@ void Window::keyPressEvent(QKeyEvent *event)
     case Qt::Key_R: //std::cout << "Tecla R" << std::endl;
     m_camera.resetCamera();
      break;
+
+    case Qt::Key_G:
+//    addGlyph();
+     break;
     }
+
+    draw();
+
+//    renderCrossLine();
+
+
+
 }
 
 
@@ -353,7 +417,36 @@ void Window::resizeGL(int width, int height)
     m_currentWidth = QPaintDevice::devicePixelRatio()*width;
     m_currentHeight = QPaintDevice::devicePixelRatio()*height;
     cout << "(width, height): (" << width << " , " << height << ")" << endl;
+    viewPort();
+    draw();
 
+
+}
+
+void Window::draw()
+{
+
+    viewPort();
+    float bg[] = {1.0f,1.0f,1.0f,1.0};
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearBufferfv(GL_COLOR, 0, bg);
+
+    QR1.setProjectionMatrix(m_camera.projection());
+    QR1.setMVMatrix(m_camera.view());
+    QR1.render();
+
+
+
+
+
+    update();
+
+
+
+//    ODF1.setProjectionMatrix(m_camera.projection());
+//    ODF1.setMVMatrix(m_camera.view());
+//    ODF1.render();
+//     update();
 
 }
 

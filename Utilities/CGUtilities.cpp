@@ -76,7 +76,7 @@ void CGUtilities::shrinkVec3(std::vector<glm::vec3> &V, std::vector<unsigned int
             if (glm::dot(glm::vec3(V[i]), glm::vec3(V[j])) == 1.0f){
                 V.erase(V.begin() + j);
                 for (auto & id: indexChanges)//unsigned int k = 0; k < indexChanges.size(); k++)
-                    if (id > j)
+                    if (id >= j)
                         id--;
                 j--;
                 vSize--;

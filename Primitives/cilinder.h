@@ -49,8 +49,8 @@ class Cilinder : protected CGUtilities
 
 public:
 
-    Cilinder(int thetaRes = 30, int heightRes = 30, float R = 0.25f, float height = 0.5f,
-             glm::vec3 center = glm::vec3(0.0), glm::vec3 mainAxis = glm::vec3(0.0, 1.0, 0.0));
+    Cilinder(int thetaRes = 30, int heightRes = 2, float R = 0.1f, float height = 0.10f,
+             glm::vec3 center = glm::vec3(0.0), glm::vec3 mainAxis = glm::vec3(1.0, 1.0, 0.0));
     void initialize();
     void setProjectionMatrix(glm::mat4 projectionMatrix);
     void setMVMatrix(glm::mat4 mvMatrix);

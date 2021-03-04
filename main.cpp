@@ -38,10 +38,15 @@ int main(int argc, char *argv[])
   QSurfaceFormat::setDefaultFormat(format);
   format.setVersion(4,0);
 
+
+#ifdef TESTE1
+//  std::cout << "Teste da Macro: " << std::endl;
+#endif
+
   // Set the window up
   Window window;
   window.setFormat(format);
-  window.resize(QSize(800, 600));
+  window.resize(QSize(600, 600));
   window.show();
 
   return app.exec();
