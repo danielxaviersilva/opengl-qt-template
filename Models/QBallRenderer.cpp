@@ -37,6 +37,8 @@ void QBallRenderer::initialize(QBall *qBall)
 
 void QBallRenderer::setProjectionMatrix(glm::mat4 projectionMatrix)
 {
+
+
     if(m_initialized)
     {
         m_program.useProgram();
@@ -73,7 +75,7 @@ void QBallRenderer::setSphereSurface()
     _check_gl_error(__FILE__,__LINE__);
 }
 
-void QBallRenderer::setInstancedVertexAttribBuffer()
+void QBallRenderer::setInstancedVertexAttribBuffer(const std::vector<unsigned int>& odfIndexSet)
 {
 //    Timer T(__FUNCTION__);
 
@@ -83,29 +85,28 @@ void QBallRenderer::setInstancedVertexAttribBuffer()
 //    currentODFListSet.reserve(m_pts_from_tex_coord.m_num_points*m_ODFsize);
 
 
-    currentReorientMatrixSet.resize(m_InstancesCount);
-    currentODFListSet.resize(m_ODFsize*m_InstancesCount);
+    currentReorientMatrixSet.resize(odfIndexSet.size());
+    currentODFListSet.resize(m_ODFsize*odfIndexSet.size());
 
 #pragma omp parallel
-    for(unsigned int i = 0; i < m_InstancesCount; i++) {
+    for(size_t i = 0; i < odfIndexSet.size(); i++) {
 
-        float* currentVoxelAttributes = m_qBallRef->getVoxelODF(i);
+        float* currentVoxelAttributes = m_qBallRef->getVoxelODF(odfIndexSet[i]);
         int currentODFIndex = 0;
         for(int j = 0; j< m_ODFsize;j++) {
            currentODFListSet[i*m_ODFsize + j] = currentVoxelAttributes[currentODFIndex++];
         }
 
-        currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(i);
+        currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(odfIndexSet[i]);
      }
 
-    m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize, m_InstancesCount);
+    m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize, odfIndexSet.size());
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
     m_ODFMapTexture.Unbind();
 
     m_SphereAttributesVBO.updateBufferData(currentReorientMatrixSet.data(), currentReorientMatrixSet.size()*sizeof(glm::mat4));
     _check_gl_error(__FILE__,__LINE__);
-
 }
 
 void QBallRenderer::setVaoLayout()
@@ -139,7 +140,7 @@ void QBallRenderer::setVaoLayout()
     _check_gl_error(__FILE__,__LINE__);
 }
 
-void QBallRenderer::render()
+void QBallRenderer::render(const std::vector<unsigned int>& odfIndexSet)
 {
 
     if (!m_initialized)
@@ -151,7 +152,7 @@ void QBallRenderer::render()
     m_program.useProgram();
     m_vao.bind();
     m_idxBuffer.bind();
-    setInstancedVertexAttribBuffer();
+    setInstancedVertexAttribBuffer(odfIndexSet);
 
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
@@ -162,7 +163,7 @@ void QBallRenderer::render()
 #ifndef QT_NO_DEBUG
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 #endif
-    glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, m_InstancesCount);
+    glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, odfIndexSet.size());
     _check_gl_error(__FILE__,__LINE__);
 
 //    glDisable(GL_DEPTH_TEST);

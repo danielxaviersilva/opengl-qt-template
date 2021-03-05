@@ -57,7 +57,7 @@ public:
 
 
     virtual void initialize(QBall* qBall);
-    virtual void render();
+    virtual void render(const std::vector<unsigned int>& odfIndexSet);
 
 
 
@@ -72,7 +72,7 @@ protected:
     void setSphereSurface();
 //    void updateODFMapTexture();
 
-    virtual void setInstancedVertexAttribBuffer();
+    virtual void setInstancedVertexAttribBuffer(const std::vector<unsigned int>& odfIndexSet);
 
 };
 

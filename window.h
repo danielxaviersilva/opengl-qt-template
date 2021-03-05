@@ -47,6 +47,12 @@ private:
   void viewPort();
 
 
+  unsigned int m_odfSamplesAmount;
+  unsigned int m_counter;
+  QBall *m_Qball1;
+  QBallRenderer *m_QballRenderer1;
+
+
 
 
   // OpenGL State Information

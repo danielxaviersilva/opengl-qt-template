@@ -32,11 +32,12 @@ void QBallEvenRenderer::initialize(QBall *qBall)
         setProjectionMatrix(glm::mat4(1.0f));
         setMVMatrix(glm::mat4(1.0f));
 
+
         m_program.release();
     }
 }
 
-void QBallEvenRenderer::render()
+void QBallEvenRenderer::render(const std::vector<unsigned int>& odfIndexSet)
 {
     if (!m_initialized)
     {
@@ -47,7 +48,7 @@ void QBallEvenRenderer::render()
     m_program.useProgram();
     m_vao.bind();
     m_idxBuffer.bind();
-    setInstancedVertexAttribBuffer();
+    setInstancedVertexAttribBuffer(odfIndexSet);
 
     glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
     m_ODFMapTexture.Bind(m_slot);
@@ -58,7 +59,7 @@ void QBallEvenRenderer::render()
 #ifndef QT_NO_DEBUG
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 #endif
-    glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, m_InstancesCount);
+    glDrawElementsInstanced(GL_TRIANGLES, m_verticesSize,  GL_UNSIGNED_INT, nullptr, odfIndexSet.size());
     _check_gl_error(__FILE__,__LINE__);
 
 //    glDisable(GL_DEPTH_TEST);
@@ -71,10 +72,11 @@ void QBallEvenRenderer::render()
     m_idxBuffer.unbind();
     m_vao.unbind();
     m_program.release();
+
 }
 
 
-void QBallEvenRenderer::setInstancedVertexAttribBuffer()
+void QBallEvenRenderer::setInstancedVertexAttribBuffer(const std::vector<unsigned int>& odfIndexSet)
 {
     //    Timer T(__FUNCTION__);
 
@@ -84,22 +86,22 @@ void QBallEvenRenderer::setInstancedVertexAttribBuffer()
     //    currentODFListSet.reserve(m_pts_from_tex_coord.m_num_points*m_ODFsize);
 
 
-        currentReorientMatrixSet.resize(m_InstancesCount);
-        currentODFListSet.resize(m_InstancesCount*m_ODFsize/2);
+        currentReorientMatrixSet.resize(odfIndexSet.size());
+        currentODFListSet.resize(odfIndexSet.size()*m_ODFsize/2);
 
     #pragma omp parallel
-        for(unsigned int i = 0; i < m_InstancesCount; i++) {
+        for(size_t i = 0; i < odfIndexSet.size(); i++) {
 
-            float* currentVoxelAttributes = m_qBallRef->getVoxelODF(i);
+            float* currentVoxelAttributes = m_qBallRef->getVoxelODF(odfIndexSet[i]);
             int currentODFIndex = 0;
             for(int j = 0; j< m_ODFsize/2;j++) {
                currentODFListSet[i*m_ODFsize/2 + j] = currentVoxelAttributes[currentODFIndex++];
             }
 
-            currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(i);
+            currentReorientMatrixSet[i] = m_qBallRef->getVoxelDisplacement(odfIndexSet[i]);
          }
 
-        m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize/2, m_InstancesCount);
+        m_ODFMapTexture.uploadTexture(currentODFListSet, m_ODFsize/2, odfIndexSet.size());
         glUniform1i(m_program.getUniformLocation("u_ODFMap"), m_slot);
         m_ODFMapTexture.Bind(m_slot);
         m_ODFMapTexture.Unbind();

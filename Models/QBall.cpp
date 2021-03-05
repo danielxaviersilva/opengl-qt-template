@@ -103,11 +103,11 @@ void QBall::computeODFs()
 //            }
 //            psi[i] = abs(SH);
 
-            psi[i] = 1.0f;//((float)rand()/(float)(RAND_MAX));
+            psi[i] = ((float)rand()/(float)(RAND_MAX));
 //            if (psi[i] < 0.7f) psi[i] = 0.7f;
-            auto max = max_element(std::begin(currentODF), std::end(currentODF));
-            auto min = min_element(std::begin(currentODF), std::end(currentODF));
-            psi[i] = (currentODF[i]-*min)/(*max - *min);
+//            auto max = max_element(std::begin(currentODF), std::end(currentODF));
+//            auto min = min_element(std::begin(currentODF), std::end(currentODF));
+//            psi[i] = (currentODF[i]-*min)/(*max - *min);
 //            psi[i] = (currentODF[i])/(*max);
 //            psi[i] = Psi679871[i];
 //            psi[i] = (std::min({fabs(m_sphereAttributesBuffer[i].x),

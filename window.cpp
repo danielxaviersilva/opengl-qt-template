@@ -40,14 +40,15 @@
 //QBall Q1(128*128, 4, 15, 15);
 //QBallRenderer QR1;
 
-QBallHemisphere Q1(4, 3, 15, 15);
-QBallEvenRenderer QR1;
+
 
 
 Window::~Window()
 {
   makeCurrent();
   teardownGL();
+//  delete Q1;
+//  delete QR1;
 }
 
 /*******************************************************************************
@@ -56,14 +57,40 @@ Window::~Window()
 void Window::initializeGL()
 {
 
+    m_odfSamplesAmount = 1024u;
+    m_counter = 0u;
+
       initializeOpenGLFunctions();
 //      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));
 //      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
 //      m_lightSource.setShadingModel(LightSource::FLAT);
 
-    Q1.computeODFs();
-    QR1.initialize(&Q1);
-    viewPort();
+
+    //Contrutores:
+    //Primeiro argumento: Tamanho dos samples
+    //Segundo argumento: Tesselagens do icosaedro
+        // 0 (ordem 0): 12 vertices;
+        // 1 (ordem 2): 42 vertices;
+        // 2 (ordem 4): 162 vertices;
+        // 3 (ordem 8): 642 vertices;
+        // 4 (ordem 16): 2562 vertices;
+    //Terceiro/quarto argumento: theta e phi para discretizar mesh esférico. Somente util quando a variavel isIco do construtor é false.
+
+    //   m_Qball1 = new QBall(m_odfSamplesAmount, 3, 15, 15);
+    //   m_QballRenderer1 = new QBallRenderer();
+
+
+   //QBallHemisphere e EvenRenderer armazenam renderizam dados da forma escrita no artigo na subseção da renderização de ODFs simétricas e são mais rápidas
+   m_Qball1 = new QBallHemisphere(m_odfSamplesAmount, 3, 15, 15);
+   m_QballRenderer1 = new QBallEvenRenderer();
+    m_Qball1->computeODFs();
+    m_QballRenderer1->initialize(m_Qball1);
+
+
+
+
+
+    resizeGL(this->width(), this->height());
 
 }
 
@@ -71,6 +98,8 @@ void Window::initializeGL()
 
 void Window::paintGL()
 {
+    m_counter++;
+    m_counter = m_counter%m_odfSamplesAmount;
 
 //    Timer T(__FUNCTION__);
 
@@ -189,7 +218,8 @@ void Window::keyPressEvent(QKeyEvent *event)
 //    addGlyph();
      break;
     }
-
+    m_QballRenderer1->setProjectionMatrix(m_camera.projection());
+    m_QballRenderer1->setMVMatrix(m_camera.view());
     draw();
 
 //    renderCrossLine();
@@ -203,8 +233,10 @@ void Window::resizeGL(int width, int height)
 {
     m_currentWidth = QPaintDevice::devicePixelRatio()*width;
     m_currentHeight = QPaintDevice::devicePixelRatio()*height;
-//    cout << "(width, height): (" << width << " , " << height << ")" << endl;
+    std::cout << "(m_currentWidth , m_currentHeight): (" << width << " , " << height << ")" << std::endl;
+    _check_gl_error(__FILE__, __LINE__);
     viewPort();
+    _check_gl_error(__FILE__, __LINE__);
     draw();
 
 
@@ -212,15 +244,15 @@ void Window::resizeGL(int width, int height)
 
 void Window::draw()
 {
+    //m_counter é incrementado em paintGL
+    std::vector<unsigned int> glyphsIndex(m_counter) ; // vector with 100 ints.
+    std::iota (std::begin(glyphsIndex), std::end(glyphsIndex), 0);
 
     viewPort();
     float bg[] = {1.0f,1.0f,1.0f,1.0};
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
-
-    QR1.setProjectionMatrix(m_camera.projection());
-    QR1.setMVMatrix(m_camera.view());
-    QR1.render();
+    m_QballRenderer1->render(glyphsIndex);
     update();
 
 

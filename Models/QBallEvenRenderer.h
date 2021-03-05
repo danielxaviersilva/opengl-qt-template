@@ -26,11 +26,11 @@ public:
 
     // QBallRenderer interface
 public:
-    void initialize(QBall *qBall);
-    void render();
+    void initialize(QBall *qBall) override;
+    void render(const std::vector<unsigned int>& odfIndexSet) override;
 
 protected:
-    void setInstancedVertexAttribBuffer();
+    void setInstancedVertexAttribBuffer(const std::vector<unsigned int>& odfIndexSet) override;
 };
 
 #endif // QBALLEVENRENDERER_H
