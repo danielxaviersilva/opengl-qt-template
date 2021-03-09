@@ -5,6 +5,17 @@
 QBallRenderer::QBallRenderer(): m_initialized(false), m_slot(0)
 {}
 
+QBallRenderer::~QBallRenderer()
+{
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//    glDeleteBuffers(1,&m_baseDirectionsVBO);
+//    glDeleteBuffers(1,&m_instancedAttributesVBO);
+//    glDeleteBuffers(1,&m_baseDirectionsIBO);
+//    glDeleteVertexArrays(1, &m_vao);
+}
+
 void QBallRenderer::initialize(QBall *qBall)
 {
     m_InstancesCount = qBall->getInstancesAmount();

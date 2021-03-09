@@ -51,6 +51,7 @@ protected:
 
 public:
     QBallRenderer();
+    virtual ~QBallRenderer();
     void addGlyph(const std::vector<float> &ODFList, glm::vec3 center, glm::vec3 axis = glm::vec3(0.0f,1.0f,0.0f), float scale = 1.0f);
     void addThreeAngleGlyph(const std::vector<float> &ODFList, float scale = 1.0f);
 //    void addSphere(float r = 0.5, glm::vec3 center = glm::vec3(0.0f));

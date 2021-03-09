@@ -56,17 +56,24 @@ Window::~Window()
  ******************************************************************************/
 void Window::initializeGL()
 {
+    //CONSTANTS
+    m_IcosahedronIterations = 4;
+    m_isRenderingOptimized = true;
+    m_benchmarkMaxSamplesAmount = 10000;
+    m_executionsAmount = 100;
+    m_step = 5;
 
 //    m_odfSamplesAmount = 4096u;
-    m_odfSamplesAmount = 128;
-    m_counter = 0u;   
-    m_executionsAmount = 500;
-    m_indexAmount = 1;
-    m_step = 10;
+    //INITIAL Values PARAMETERS
+    m_rows = 1;
+    m_odfSamplesAmount = m_rows*m_rows;
+    m_counter = 0;
+    m_indexAmount = m_odfSamplesAmount;
     m_glyphsIndex.resize(m_indexAmount);
     std::iota (std::begin(m_glyphsIndex), std::end(m_glyphsIndex), 0);
+    //////
 
-      initializeOpenGLFunctions();
+    initializeOpenGLFunctions();
 
 //      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));ss
 //      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
@@ -84,15 +91,20 @@ void Window::initializeGL()
     //Terceiro/quarto argumento: theta e phi para discretizar mesh esférico. Somente util quando a variavel isIco do construtor é false.
 
 
-//       m_Qball1 = new QBall(m_odfSamplesAmount, 3, 15, 15);
-//       m_QballRenderer1 = new QBallRenderer();
-//       m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Full_V_" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
+
 
 
    //QBallHemisphere e EvenRenderer armazenam renderizam dados da forma escrita no artigo na subseção da renderização de ODFs simétricas e são mais rápidas
-   m_Qball1 = new QBallHemisphere(m_odfSamplesAmount, 2, 15, 15);
-   m_QballRenderer1 = new QBallEvenRenderer();
-    m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Half_V_t" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
+   if (m_isRenderingOptimized) {
+        m_Qball1 = new QBallHemisphere(m_odfSamplesAmount, m_IcosahedronIterations, 15, 15);
+        m_QballRenderer1 = new QBallEvenRenderer();
+        m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Half_V" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
+   } else {
+        m_Qball1 = new QBall(m_odfSamplesAmount, m_IcosahedronIterations, 15, 15);
+        m_QballRenderer1 = new QBallRenderer();
+        m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Full_V" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
+   }
+
 
     m_file.open(QIODevice::WriteOnly | QIODevice::Text);
     m_Qball1->computeODFs();
@@ -123,14 +135,10 @@ void Window::paintGL()
 
 
     if(m_counter == m_executionsAmount) {
-        m_indexAmount+=10;
-        if(m_indexAmount > m_odfSamplesAmount) {
-            exit(0);
-        }
-        m_glyphsIndex.resize(m_indexAmount);
-        std::iota (std::begin(m_glyphsIndex), std::end(m_glyphsIndex), 0);
-        m_counter = 0;
-        std::cout << "Renderizando " << m_indexAmount << " indices" << std::endl;
+        delete m_Qball1;
+        delete m_QballRenderer1;
+//         m_file.open(QIODevice::WriteOnly | QIODevice::Text);
+        updateBenchmarkParameters();
         m_startTimePoint = std::chrono::high_resolution_clock::now();
         return;
     }
@@ -160,6 +168,35 @@ void Window::viewPort()
         glViewport(0, (m_currentHeight-m_currentWidth)/2, m_currentWidth, m_currentWidth);
     else
         glViewport((m_currentWidth-m_currentHeight)/2, 0, m_currentHeight, m_currentHeight);
+
+}
+
+void Window::updateBenchmarkParameters()
+{
+
+
+    m_rows +=m_step;
+    m_odfSamplesAmount = m_rows*m_rows;
+    m_counter = 0;
+    //m_executionsAmount = 30;
+    m_indexAmount = m_odfSamplesAmount;
+    m_glyphsIndex.resize(m_indexAmount);
+    std::iota (std::begin(m_glyphsIndex), std::end(m_glyphsIndex), 0);
+
+    if ( m_odfSamplesAmount > m_benchmarkMaxSamplesAmount ) {
+        std::cout << "BENCHMARK FINISHED!" << std::endl;
+        exit(0);
+    }
+
+    if ( m_isRenderingOptimized ) {
+        m_Qball1 =  new QBallHemisphere(m_odfSamplesAmount, m_IcosahedronIterations, 15, 15);
+        m_QballRenderer1 = new QBallEvenRenderer();
+    } else {
+        m_Qball1 = new QBall(m_odfSamplesAmount, m_IcosahedronIterations, 15, 15);
+        m_QballRenderer1 = new QBallRenderer();
+    }
+    m_Qball1->computeODFs();
+    m_QballRenderer1->initialize(m_Qball1);
 
 }
 

@@ -52,7 +52,7 @@ protected:
 public:
 
     QBall(int instancesAmount = 30, int icoIterations = 3, int thetaRes = 15, int phiRes = 15);
-    ~QBall();
+    virtual ~QBall();
 
     /**
     * @brief Initialization and computation of QBall Algorithm. All the intermediate variable names used has the same name as in the base article

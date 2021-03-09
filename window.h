@@ -46,6 +46,8 @@ private:
   int m_currentWidth, m_currentHeight;
   void viewPort();
 
+  void updateBenchmarkParameters();
+
 
   unsigned int m_odfSamplesAmount;
 
@@ -58,6 +60,14 @@ private:
   unsigned int m_executionsAmount;
   unsigned int m_indexAmount;
   unsigned int m_step;
+  unsigned int m_rows;
+  unsigned int m_benchmarkMaxSamplesAmount;
+
+
+  unsigned int m_IcosahedronIterations;
+
+  bool m_isRenderingOptimized;
+
 
   QFile m_file;
 

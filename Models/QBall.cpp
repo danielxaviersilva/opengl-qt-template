@@ -66,7 +66,7 @@ QBall::~QBall()
         delete[] m_ODF[i];
     delete[] m_ODF;
 
-    delete [] m_GFA;
+//    delete [] m_GFA;
     delete [] m_translateMatrix;
 }
 
@@ -131,7 +131,7 @@ void QBall::computeODFs()
 
 void QBall::computeTranslationMatrices(const unsigned int& instancesAmount)
 {
-    int cols = (int) sqrt(instancesAmount) + 1;
+    int cols = (int) sqrt(instancesAmount);
     m_translateMatrix = new glm::mat4[cols*cols];
     std::vector<float> borderMeshX;
     std::vector<float> borderMeshY;
