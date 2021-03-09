@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   //format.setProfile(QSurfaceFormat::OpenGLContextProfile::CompatibilityProfile);
   QSurfaceFormat::setDefaultFormat(format);
   format.setVersion(4,0);
+  format.setSwapInterval(0);
 
 
 #ifdef TESTE1

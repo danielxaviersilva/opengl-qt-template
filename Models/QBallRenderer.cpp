@@ -143,8 +143,7 @@ void QBallRenderer::setVaoLayout()
 void QBallRenderer::render(const std::vector<unsigned int>& odfIndexSet)
 {
 
-    if (!m_initialized)
-    {
+    if (!m_initialized) {
         std::cerr << "SphereODF.render(): not rendering because not initialized yet. Use method initialize()" << std::endl;
         return;
     }

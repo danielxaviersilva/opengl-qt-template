@@ -45,16 +45,16 @@ void QBallHemisphere::computeODFs()
 
 //            auto SH = std::abs(boost::math::spherical_harmonic(/*m_SHorder*/m_SHorder, idx - m_SHorder , m_phiSet[i] , m_thetaSet[i] ));
 //            SH = SH*SH;
-            float SH = std::sqrtf(5/(16*M_PI))*(3*m_baseHemisphere[i].z*m_baseHemisphere[i].z - 1);
-            psi[i] = abs(SH);
+//            float SH = /*std::sqrtf(5/(16*M_PI))**/(3*m_baseHemisphere[i].z*m_baseHemisphere[i].z - 1)/2;
+//            psi[i] = abs(SH);
 //            std::cout << SH << std::endl;
 //            if(isnan(SH_out[SHidx])) {
 //                std::cout << "PHI NAN: " << asin(m_sphereAttributesBuffer[i].y) << std::endl;
 //            }
 
 
-//            psi[i] = ((float)rand()/(float)(RAND_MAX));
-//            if (psi[i] < 0.7f) psi[i] = 0.7f;
+            psi[i] = ((float)rand()/(float)(RAND_MAX));
+            if (psi[i] < 0.7f) psi[i] = 0.7f;
 //            auto max = max_element(std::begin(currentODF), std::end(currentODF));
 //            auto min = min_element(std::begin(currentODF), std::end(currentODF));
 //            psi[i] = (currentODF[i]-*min)/(*max - *min);

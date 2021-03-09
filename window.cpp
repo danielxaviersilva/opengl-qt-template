@@ -57,11 +57,18 @@ Window::~Window()
 void Window::initializeGL()
 {
 
-    m_odfSamplesAmount = 1024u;
-    m_counter = 0u;
+//    m_odfSamplesAmount = 4096u;
+    m_odfSamplesAmount = 128;
+    m_counter = 0u;   
+    m_executionsAmount = 500;
+    m_indexAmount = 1;
+    m_step = 10;
+    m_glyphsIndex.resize(m_indexAmount);
+    std::iota (std::begin(m_glyphsIndex), std::end(m_glyphsIndex), 0);
 
       initializeOpenGLFunctions();
-//      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));
+
+//      m_lightSource.setAmbient(glm::vec4(1.0f, 0.0f,0.0f,1.0f));ss
 //      m_lightSource.setPosition(glm::vec4(1.0f, 1.0f,0.0f,1.0f));
 //      m_lightSource.setShadingModel(LightSource::FLAT);
 
@@ -76,21 +83,22 @@ void Window::initializeGL()
         // 4 (ordem 16): 2562 vertices;
     //Terceiro/quarto argumento: theta e phi para discretizar mesh esférico. Somente util quando a variavel isIco do construtor é false.
 
-    //   m_Qball1 = new QBall(m_odfSamplesAmount, 3, 15, 15);
-    //   m_QballRenderer1 = new QBallRenderer();
+
+//       m_Qball1 = new QBall(m_odfSamplesAmount, 3, 15, 15);
+//       m_QballRenderer1 = new QBallRenderer();
+//       m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Full_V_" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
 
 
    //QBallHemisphere e EvenRenderer armazenam renderizam dados da forma escrita no artigo na subseção da renderização de ODFs simétricas e são mais rápidas
-   m_Qball1 = new QBallHemisphere(m_odfSamplesAmount, 3, 15, 15);
+   m_Qball1 = new QBallHemisphere(m_odfSamplesAmount, 2, 15, 15);
    m_QballRenderer1 = new QBallEvenRenderer();
+    m_file.setFileName(QString::fromStdString("/Users/daniel_mac/Half_V_t" + std::to_string(m_Qball1->getBaseDirections().size()) + ".txt"));
+
+    m_file.open(QIODevice::WriteOnly | QIODevice::Text);
     m_Qball1->computeODFs();
     m_QballRenderer1->initialize(m_Qball1);
-
-
-
-
-
     resizeGL(this->width(), this->height());
+    m_startTimePoint = std::chrono::high_resolution_clock::now();
 
 }
 
@@ -98,8 +106,9 @@ void Window::initializeGL()
 
 void Window::paintGL()
 {
-    m_counter++;
-    m_counter = m_counter%m_odfSamplesAmount;
+
+
+//    m_counter = m_counter%m_odfSamplesAmount;
 
 //    Timer T(__FUNCTION__);
 
@@ -111,6 +120,33 @@ void Window::paintGL()
 
     draw();
     update();
+
+
+    if(m_counter == m_executionsAmount) {
+        m_indexAmount+=10;
+        if(m_indexAmount > m_odfSamplesAmount) {
+            exit(0);
+        }
+        m_glyphsIndex.resize(m_indexAmount);
+        std::iota (std::begin(m_glyphsIndex), std::end(m_glyphsIndex), 0);
+        m_counter = 0;
+        std::cout << "Renderizando " << m_indexAmount << " indices" << std::endl;
+        m_startTimePoint = std::chrono::high_resolution_clock::now();
+        return;
+    }
+    m_counter++;
+
+
+    m_endTimePoint = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_startTimePoint).time_since_epoch().count();
+    auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_endTimePoint).time_since_epoch().count();
+    auto duration = end - start;
+//    double ms = duration*0.001;
+    QTextStream out(&m_file);
+    out << m_glyphsIndex.size() << ", " << duration << "\n";
+//    std::cout << m_glyphsIndex.size() << ", " << duration << std::endl;
+    m_startTimePoint = std::chrono::high_resolution_clock::now();
+
 }
 
 void Window::teardownGL()
@@ -245,15 +281,25 @@ void Window::resizeGL(int width, int height)
 void Window::draw()
 {
     //m_counter é incrementado em paintGL
-    std::vector<unsigned int> glyphsIndex(m_counter) ; // vector with 100 ints.
-    std::iota (std::begin(glyphsIndex), std::end(glyphsIndex), 0);
+
+
+
 
     viewPort();
     float bg[] = {1.0f,1.0f,1.0f,1.0};
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearBufferfv(GL_COLOR, 0, bg);
-    m_QballRenderer1->render(glyphsIndex);
-    update();
+    //Timer - begin
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_startTimePoint = std::chrono::high_resolution_clock::now();
+    //
+    m_QballRenderer1->render(m_glyphsIndex);
+    //
+    //Timer - end
+
+
+
+
+
 
 
 }

@@ -2,8 +2,8 @@
 #define WINDOW_H
 
 #include <QOpenGLWindow>
-#include <QOpenGLFunctions>
-#include <QOpenGLBuffer>
+//#include <QOpenGLFunctions>
+//#include <QOpenGLBuffer>
 //#include <QOpenGLVertexArrayObject>
 #include <QDebug>
 #include <QKeyEvent>
@@ -18,7 +18,7 @@
 #include "Models/QBallEvenRenderer.h"
 #include <chrono>
 #include <thread>
-
+#include <string>
 
 class QOpenGLShaderProgram;
 
@@ -48,10 +48,21 @@ private:
 
 
   unsigned int m_odfSamplesAmount;
-  unsigned int m_counter;
+
   QBall *m_Qball1;
   QBallRenderer *m_QballRenderer1;
 
+
+  std::vector<unsigned int> m_glyphsIndex;
+  unsigned int m_counter;
+  unsigned int m_executionsAmount;
+  unsigned int m_indexAmount;
+  unsigned int m_step;
+
+  QFile m_file;
+
+
+  std::chrono::time_point<std::chrono::high_resolution_clock> m_startTimePoint, m_endTimePoint;
 
 
 
